@@ -63,18 +63,22 @@ try {
     const publicKey = forge.pki.setRsaPublicKey(privateKey.n, privateKey.e);
     
     // Export Public Key to SPKI DER Base64 format for Grayjay
-    const publicKeyAsn1 = forge.pki.publicKeyToAsn1(publicKey);
-    const publicKeyDer = forge.asn1.toDer(publicKeyAsn1).getBytes();
-    const pubKeyBase64 = forge.util.encode64(publicKeyDer);
+    // publicKeyToPem generates standard SPKI format
+    let pubKeyBase64 = forge.pki.publicKeyToPem(publicKey);
+    pubKeyBase64 = pubKeyBase64
+        .replace('-----BEGIN PUBLIC KEY-----', '')
+        .replace('-----END PUBLIC KEY-----', '')
+        .replace(/\s+/g, '');
 
     // 3. Normalize Script.js line endings to pure LF
     let scriptContent = fs.readFileSync(scriptPath, 'utf8');
     scriptContent = scriptContent.replace(/\r\n/g, '\n');
     fs.writeFileSync(scriptPath, scriptContent);
 
-    // 4. Sign the file
+    // 4. Sign the EXACT raw bytes of the file
+    const scriptBytes = fs.readFileSync(scriptPath);
     const md = forge.md.sha256.create();
-    md.update(fs.readFileSync(scriptPath, 'utf8'), 'utf8');
+    md.update(scriptBytes.toString('binary'));
     const signatureBytes = privateKey.sign(md);
     const signatureBase64 = forge.util.encode64(signatureBytes);
 

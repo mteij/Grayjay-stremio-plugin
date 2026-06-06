@@ -15,6 +15,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Grayjay + Stremio Plugin",
   description: "Configure your TMDB API Key and Stremio Addons to watch your favorite movies and shows directly in Grayjay.",
+  icons: {
+    icon: [
+      { url: '/icon.png', sizes: 'any' }
+    ],
+    apple: [
+      { url: '/apple-icon.png' }
+    ]
+  }
 };
 
 export default function RootLayout({

@@ -6,8 +6,8 @@
     "platformUrl": "https://greyjay-stremio.netlify.app",
     "repositoryUrl": "https://github.com/mteij/Grayjay-stremio-pluggin",
     "sourceUrl": "https://greyjay-stremio.netlify.app/plugin/Config.json",
-    "scriptUrl": "https://greyjay-stremio.netlify.app/plugin/Script.js?v=1780786147",
-    "version": 1780786147,
+    "scriptUrl": "https://greyjay-stremio.netlify.app/plugin/Script.js?v=1780786308",
+    "version": 1780786308,
     "iconUrl": "https://greyjay-stremio.netlify.app/plugin/icon.png",
     "id": "e8e19e00-22c6-43b9-a411-cf0660601f01",
     "scriptSignature": "QoEebWyQeFlWmwSpZPCXfhCxGaWlPk7lyKm9QjfjnP6bbH/31IAU+8c1OvRUMmrBN6MgMiWv2GDMuQInjASp8uMFslbtr71sl4ZlzGzjp7r8Sd6z1J31E5UukozKQ0gNrfE+QrIKQeQaAO/eS00iiLrvuLduX41tZ0cyU8J6OY6N5rYIgj3qC4r3icLFQFhnIC3LWRbQuVmFQixhI3O6zxFODoF4VNdCfs1yi2qbFPbdmqOyWfxwP+gs6tDfub/6EBgwIYRAYF0tOrl1IMh5haYUVSrAhlSqyyWEUrFZM9Z0x6Hu+HAowG5WEd+mHlKOhBUqC6cw/1aN+6Xw9niXkQ==",
@@ -23,7 +23,7 @@
     ],
     "authentication": {
         "userAgent": "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.230 Mobile Safari/537.36",
-        "completionUrl": "https://greyjay-stremio.netlify.app/dashboard",
+        "completionUrl": "https://greyjay-stremio.netlify.app/login/success",
         "loginUrl": "https://greyjay-stremio.netlify.app/login"
     }
 }

@@ -1,28 +1,38 @@
 {
-	"name": "Stremio Addons",
-	"description": "Watch content using your Stremio Addons mapped via TMDB.",
-	"author": "Michi",
-	"authorUrl": "",
-	"platformUrl": "https://www.themoviedb.org",
-	"repositoryUrl": "https://github.com/Michi/Grayjay-stremio-pluggin",
-	"sourceUrl": "https://greyjay-stremio.netlify.app/plugin/Config.json",
-	"scriptUrl": "./Script.js",
-	"version": 1,
-	"iconUrl": "",
-	"id": "e8e19e00-22c6-43b9-a411-cf0660601f01",
-	"scriptSignature": "",
-	"scriptPublicKey": "",
-	"packages": ["Http", "Utilities", "DOMParser"],
-	"allowEval": false,
-	"allowUrls": [
-		"everywhere"
-	],
-	"authentication": {
-		"userAgent": "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.230 Mobile Safari/537.36",
-		"completionUrl": "https://greyjay-stremio.netlify.app/dashboard*success=true*",
-		"loginUrl": "https://greyjay-stremio.netlify.app/login",
-		"headersToFind": ["authorization"],
-		"cookiesToFind": ["stremio_session_id", "sb-olslfmepnraovcoitkkr-auth-token.0", "sb-olslfmepnraovcoitkkr-auth-token.1"],
-		"cookiesExclOthers": false
-	}
+    "name": "Stremio Addons",
+    "description": "Watch content using your Stremio Addons mapped via TMDB.",
+    "author": "MTEIJ",
+    "authorUrl": "https://github.com/mteij",
+    "platformUrl": "https://www.themoviedb.org",
+    "repositoryUrl": "https://github.com/mteij/Grayjay-stremio-pluggin",
+    "sourceUrl": "https://greyjay-stremio.netlify.app/plugin/Config.json",
+    "scriptUrl": "https://greyjay-stremio.netlify.app/plugin/Script.js",
+    "version": 1,
+    "iconUrl": "https://greyjay-stremio.netlify.app/plugin/icon.png",
+    "id": "e8e19e00-22c6-43b9-a411-cf0660601f01",
+    "scriptSignature": "AZV3EmmXYJF//nSd/O6aX/fVDvOGIyyKiEs4S7x2TR2EWJI18TuN/sVeGXZs7wCauWoSiA3hLQIke6KwlRgAHnPlP+yp9WAhfD4wlIwzc4s2wZ6kooOZzI2p0XSU9Jmlf5KaPA2XkrxGgONFQxZaxjCUO8EE35TGCvz76j3AU/lbJEhYHKruT/j9aiPOWK/VKgv1bXStyJNsTnrcJXejLEQ2u6vX2SxSRVpc396kqeUjnv7dZ4qhYkUiXe/bv+yOc9qxGhL/UWxEC2NLZQzzhGUTdotz8cuwfyYKWn8MFL5pafA0Gw0GUnZBQrX5tIw1nqKEYnUpEaGXIjiqGqV6mA==",
+    "scriptPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAihsOGe2UTp41JYIDDG5XAfXNNgnuQVOsuoBDau/5ue7wDVYj9N+eTJC6rSQEp1OnhVwtwe8M995L4MyYQQWvAmL0bYZnhP+1rXVIj6/9b3ewiLQD3MIFyxPxS7q/weav/pCrAQDGDdRn68yeM8ne1vcbt8F+8GUFbgDhNAxSzfUSdyDdY46rx41XN84BYLyFrNwifvzeRjrcsObyIsKfjlVjejoO17O/ADr36Vv+fe2buu4V6vLKMtPJJpkwJukBpJ2k83OTYbjrMmrxcDKxcngUsA/j9CszlxoR4LSowl6Ion1iqL1bTa9zIfG9d6V0XtwhzaazZOnFyz8u1Eq2lQIDAQAB",
+    "packages": [
+        "Http",
+        "Utilities",
+        "DOMParser"
+    ],
+    "allowEval": false,
+    "allowUrls": [
+        "everywhere"
+    ],
+    "authentication": {
+        "userAgent": "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.230 Mobile Safari/537.36",
+        "completionUrl": "https://greyjay-stremio.netlify.app/dashboard*success=true*",
+        "loginUrl": "https://greyjay-stremio.netlify.app/login",
+        "headersToFind": [
+            "authorization"
+        ],
+        "cookiesToFind": [
+            "stremio_session_id",
+            "sb-olslfmepnraovcoitkkr-auth-token.0",
+            "sb-olslfmepnraovcoitkkr-auth-token.1"
+        ],
+        "cookiesExclOthers": false
+    }
 }

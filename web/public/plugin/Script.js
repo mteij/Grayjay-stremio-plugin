@@ -17,7 +17,7 @@ function fetchUserSettings() {
         cookieString = auth;
     }
 
-    const response = http.GET("http://100.64.89.155:3000/api/settings", {
+    const response = http.GET("https://greyjay-stremio.netlify.app/api/settings", {
         "Cookie": cookieString
     });
 

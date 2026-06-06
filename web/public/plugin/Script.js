@@ -202,8 +202,6 @@ source.getContentDetails = function(url) {
         const text = ((stream.name || "") + " " + (stream.title || "")).toLowerCase();
         // Filter out temporary/loading/unavailable streams
         if (/loading|reloading|updating|not available|unavailable|addon error|install addon|configure|\u26a0/.test(text)) return false;
-        // Filter out no-audio streams
-        if (/\bnoaudio\b|\bmuted\b|\bno.?audio\b/.test(text)) return false;
         return true;
     }
 

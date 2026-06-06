@@ -75,9 +75,9 @@ try {
     scriptContent = scriptContent.replace(/\r\n/g, '\n');
     fs.writeFileSync(scriptPath, scriptContent);
 
-    // 4. Sign the EXACT raw bytes of the file
+    // 4. Sign the EXACT raw bytes of the file using SHA-512 (required by Grayjay)
     const scriptBytes = fs.readFileSync(scriptPath);
-    const md = forge.md.sha256.create();
+    const md = forge.md.sha512.create();
     md.update(scriptBytes.toString('binary'));
     const signatureBytes = privateKey.sign(md);
     const signatureBase64 = forge.util.encode64(signatureBytes);

@@ -19,16 +19,15 @@ if (fs.existsSync(envPath)) {
     });
 }
 
-let privateKeyBase64 = process.env.PLUGIN_PRIVATE_KEY;
-if (privateKeyBase64) {
-    // Strip everything except pure Base64 characters to prevent silent truncation
-    privateKeyBase64 = privateKeyBase64.replace(/[^A-Za-z0-9+/=]/g, '');
-}
+let envKey = process.env.PLUGIN_PRIVATE_KEY;
 
-if (!privateKeyBase64) {
+if (!envKey) {
     console.warn('WARNING: PLUGIN_PRIVATE_KEY is not set. Skipping plugin signing & versioning.');
     process.exit(0);
 }
+
+// Print string length to debug truncation issues
+console.log(`Loaded private key from environment. Length: ${envKey.length} characters.`);
 
 try {
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
@@ -41,23 +40,18 @@ try {
     config.scriptUrl = `https://greyjay-stremio.netlify.app/plugin/Script.js?v=${newVersion}`;
     console.log(`Bumping plugin version to timestamp ${newVersion}...`);
 
-    // 2. Decode private key and extract public key
-    const privateKeyPem = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
+    // 2. Decode private key
+    let privateKeyPem = envKey;
+    if (!envKey.includes('-----BEGIN PRIVATE KEY-----')) {
+        // If it doesn't look like PEM, it must be the Base64 we asked them to paste
+        privateKeyPem = Buffer.from(envKey.replace(/[^A-Za-z0-9+/=]/g, ''), 'base64').toString('utf8');
+    }
     
-    // Extract the raw DER payload from the PEM string to bypass OpenSSL PEM decoder bugs
-    const derBase64 = privateKeyPem
-        .replace('-----BEGIN PRIVATE KEY-----', '')
-        .replace('-----END PRIVATE KEY-----', '')
-        .replace(/\s+/g, ''); // strip all newlines and spaces
-        
-    const privateKeyDerBuffer = Buffer.from(derBase64, 'base64');
-    
-    const privateKey = crypto.createPrivateKey({
-        key: privateKeyDerBuffer,
-        format: 'der',
-        type: 'pkcs8'
-    });
-    
+    if (!privateKeyPem.includes('-----END PRIVATE KEY-----')) {
+        throw new Error('The private key is truncated! Please ensure you copy the ENTIRE key into Netlify.');
+    }
+
+    const privateKey = crypto.createPrivateKey(privateKeyPem);
     const publicKey = crypto.createPublicKey(privateKey);
     const pubKeyBase64 = publicKey.export({ type: 'spki', format: 'der' }).toString('base64');
 

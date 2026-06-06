@@ -195,6 +195,42 @@ source.getContentDetails = function(url) {
     const sources = [];
     const subtitles = [];
 
+    /**
+     * Returns false for streams that are temporary, unavailable, or have no audio.
+     */
+    function isStreamValid(stream) {
+        const text = ((stream.name || "") + " " + (stream.title || "")).toLowerCase();
+        // Filter out temporary/loading/unavailable streams
+        if (/loading|reloading|updating|not available|unavailable|addon error|install addon|configure|\u26a0/.test(text)) return false;
+        // Filter out no-audio streams
+        if (/\bnoaudio\b|\bmuted\b|\bno.?audio\b/.test(text)) return false;
+        return true;
+    }
+
+    /**
+     * Builds a clean, human-readable source name from a Stremio stream object.
+     * stream.name is often "AddonName\nResolution" and stream.title has full file info.
+     */
+    function parseStreamName(stream) {
+        const nameParts = (stream.name || "").split("\n");
+        const addonName = nameParts[0] ? nameParts[0].trim() : "Stream";
+        const nameQuality = nameParts[1] ? nameParts[1].trim() : "";
+
+        // Try to extract resolution (e.g. 720p, 1080p, 4K, 2160p) from title or name quality
+        const combined = (stream.title || "") + " " + nameQuality;
+        const resMatch = combined.match(/(4K|2160p|1440p|1080p|720p|480p|360p)/i);
+        const resolution = resMatch ? resMatch[1].toUpperCase().replace("2160P", "4K") : (nameQuality || "?");
+
+        // Build a clean label: "[Resolution] | Title (truncated)" or fall back to addon name
+        const fileTitle = (stream.title || "").trim();
+        if (fileTitle) {
+            // Truncate long titles
+            const short = fileTitle.length > 60 ? fileTitle.substring(0, 57) + "..." : fileTitle;
+            return `${resolution} | ${short}`;
+        }
+        return `${addonName} ${resolution}`;
+    }
+
     for (const addon of _stremioAddons) {
         try {
             const streamUrl = addon.replace("manifest.json", streamEndpoint);
@@ -203,13 +239,13 @@ source.getContentDetails = function(url) {
                 const streamData = JSON.parse(streamResp.body);
                 if (streamData && streamData.streams) {
                     for (const stream of streamData.streams) {
-                        if (stream.url) {
+                        if (stream.url && isStreamValid(stream)) {
                             sources.push(new VideoUrlSource({
                                 width: 1920,
                                 height: 1080,
                                 container: stream.url.includes(".m3u8") ? "application/x-mpegURL" : "video/mp4",
                                 url: stream.url,
-                                name: `${stream.name || "Stream"} - ${stream.title || ""}`,
+                                name: parseStreamName(stream),
                                 bitrate: 0
                             }));
                         }

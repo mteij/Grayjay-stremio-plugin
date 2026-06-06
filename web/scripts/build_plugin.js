@@ -19,7 +19,10 @@ if (fs.existsSync(envPath)) {
     });
 }
 
-const privateKeyBase64 = process.env.PLUGIN_PRIVATE_KEY;
+let privateKeyBase64 = process.env.PLUGIN_PRIVATE_KEY;
+if (privateKeyBase64) {
+    privateKeyBase64 = privateKeyBase64.replace(/['"]/g, '').trim();
+}
 
 if (!privateKeyBase64) {
     console.warn('WARNING: PLUGIN_PRIVATE_KEY is not set. Skipping plugin signing & versioning.');
@@ -39,11 +42,7 @@ try {
 
     // 2. Decode private key and extract public key
     const privateKeyPem = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
-    const privateKey = crypto.createPrivateKey({
-        key: privateKeyPem,
-        format: 'pem',
-        type: 'pkcs8'
-    });
+    const privateKey = crypto.createPrivateKey(privateKeyPem);
     
     const publicKey = crypto.createPublicKey(privateKey);
     const pubKeyBase64 = publicKey.export({ type: 'spki', format: 'der' }).toString('base64');

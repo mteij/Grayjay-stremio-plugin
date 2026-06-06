@@ -6,8 +6,8 @@
     "platformUrl": "https://greyjay-stremio.netlify.app",
     "repositoryUrl": "https://github.com/mteij/Grayjay-stremio-pluggin",
     "sourceUrl": "https://greyjay-stremio.netlify.app/plugin/Config.json",
-    "scriptUrl": "https://greyjay-stremio.netlify.app/plugin/Script.js?v=1780785772",
-    "version": 1780785772,
+    "scriptUrl": "https://greyjay-stremio.netlify.app/plugin/Script.js?v=1780785946",
+    "version": 1780785946,
     "iconUrl": "https://greyjay-stremio.netlify.app/plugin/icon.png",
     "id": "e8e19e00-22c6-43b9-a411-cf0660601f01",
     "scriptSignature": "aZuylRbW4fsp4az4yawRC2hgVy0p1LtJdYlc1ZXHK5BE07utnQiMjbH7sTLnbqEWcL9R55fxCNZ7XGo4ztzLktYzK2OMhepIzANWgf61wt9pHTu21MVtMxtZ8n4+IBUyp5d5BlYcils1my4vnX5oHAoIT13Q0Y96ui8EizGfM9a8TUCvA/vvaNPKYth5ChwPDasKhZkkvyyeIpcn1+OLvk9nsx3FW8heorRQ/dsanUG0LsYu+Y2eE7J98MrnszS8vCjLmbvV15zW6l+PNTA4ZCEN+KHTcGYpaEiUC7mnXaLBIf8TB6iQ/DWi6FrrYJCOHfMEWFU0yHkiA5erWBqKtw==",
@@ -23,17 +23,13 @@
     ],
     "authentication": {
         "userAgent": "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.230 Mobile Safari/537.36",
-        "completionUrl": "https://greyjay-stremio.netlify.app/dashboard*",
+        "completionUrl": "https://greyjay-stremio.netlify.app/dashboard",
         "loginUrl": "https://greyjay-stremio.netlify.app/login",
-        "headersToFind": [
-            "authorization"
-        ],
         "cookiesToFind": [
             "stremio_session_id",
             "sb-olslfmepnraovcoitkkr-auth-token",
             "sb-olslfmepnraovcoitkkr-auth-token.0",
             "sb-olslfmepnraovcoitkkr-auth-token.1"
-        ],
-        "cookiesExclOthers": false
+        ]
     }
 }

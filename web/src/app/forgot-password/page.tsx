@@ -1,5 +1,6 @@
 import { resetPassword } from '../login/actions'
 import Link from 'next/link'
+import { SubmitButton } from '@/components/SubmitButton'
 
 export default async function ForgotPasswordPage(props: { searchParams: Promise<{ error?: string, message?: string }> }) {
   const searchParams = await props.searchParams
@@ -43,13 +44,13 @@ export default async function ForgotPasswordPage(props: { searchParams: Promise<
             />
           </div>
 
-          <div className="flex flex-col gap-4">
-            <button
+          <div className="pt-2">
+            <SubmitButton
               formAction={resetPassword}
               className="w-full cursor-pointer rounded-md border border-primary bg-primary px-5 py-3 text-base font-medium text-white transition hover:bg-opacity-90"
             >
               Send Reset Link
-            </button>
+            </SubmitButton>
           </div>
           
           <div className="mt-6 text-center">

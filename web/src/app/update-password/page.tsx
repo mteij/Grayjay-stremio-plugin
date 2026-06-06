@@ -1,4 +1,5 @@
 import { updatePassword } from './actions'
+import { SubmitButton } from '@/components/SubmitButton'
 
 export default async function UpdatePasswordPage(props: { searchParams: Promise<{ error?: string, message?: string }> }) {
   const searchParams = await props.searchParams
@@ -48,13 +49,13 @@ export default async function UpdatePasswordPage(props: { searchParams: Promise<
             />
           </div>
 
-          <div className="flex flex-col gap-4">
-            <button
+          <div className="pt-2">
+            <SubmitButton
               formAction={updatePassword}
               className="w-full cursor-pointer rounded-md border border-primary bg-primary px-5 py-3 text-base font-medium text-white transition hover:bg-opacity-90"
             >
               Update Password
-            </button>
+            </SubmitButton>
           </div>
         </form>
       </div>

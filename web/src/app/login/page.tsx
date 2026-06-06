@@ -1,5 +1,6 @@
 import { login, signup, magicLinkLogin } from './actions'
 import Link from 'next/link'
+import { SubmitButton } from '@/components/SubmitButton'
 
 export default async function LoginPage(props: { searchParams: Promise<{ error?: string, message?: string }> }) {
   const searchParams = await props.searchParams
@@ -58,29 +59,29 @@ export default async function LoginPage(props: { searchParams: Promise<{ error?:
           </div>
 
           <div className="flex flex-col gap-3 pt-4">
-            <button
+            <SubmitButton
               formAction={login}
               className="w-full cursor-pointer rounded-md border border-primary bg-primary px-5 py-3 text-base font-medium text-white transition hover:bg-opacity-90"
             >
               Log in
-            </button>
-            <button
+            </SubmitButton>
+            <SubmitButton
               formAction={signup}
               className="w-full cursor-pointer rounded-md border border-dark-3 bg-transparent px-5 py-3 text-base font-medium text-white transition hover:border-primary hover:bg-primary hover:text-white"
             >
               Create Account
-            </button>
+            </SubmitButton>
             <div className="relative flex py-2 items-center">
                 <div className="flex-grow border-t border-dark-3"></div>
                 <span className="shrink-0 mx-4 text-sm text-body-color">Or</span>
                 <div className="flex-grow border-t border-dark-3"></div>
             </div>
-            <button
+            <SubmitButton
               formAction={magicLinkLogin}
               className="w-full cursor-pointer rounded-md border border-dark-3 bg-transparent px-5 py-3 text-base font-medium text-white transition hover:border-primary hover:bg-primary hover:text-white"
             >
               Send Magic Link
-            </button>
+            </SubmitButton>
           </div>
         </form>
       </div>

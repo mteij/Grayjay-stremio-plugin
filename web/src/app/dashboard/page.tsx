@@ -2,6 +2,9 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { saveSettings, signout } from './actions'
 import AddonList, { Addon } from '@/components/AddonList'
+import { SubmitButton } from '@/components/SubmitButton'
+import QRCode from 'react-qr-code'
+import { Smartphone } from 'lucide-react'
 
 export default async function DashboardPage(props: { searchParams: Promise<{ message?: string }> }) {
   const searchParams = await props.searchParams
@@ -50,6 +53,9 @@ export default async function DashboardPage(props: { searchParams: Promise<{ mes
     })
   )
 
+  const pluginUrl = 'https://greyjay-stremio.netlify.app/plugin/Config.json'
+  const grayjayDeepLink = `grayjay://plugin/${pluginUrl}`
+
   return (
     <div className="min-h-screen bg-dark p-6 md:p-12 font-sans text-white">
       <div className="mx-auto w-full max-w-[800px]">
@@ -63,9 +69,11 @@ export default async function DashboardPage(props: { searchParams: Promise<{ mes
             </p>
           </div>
           <form action={signout}>
-            <button className="cursor-pointer rounded-md border border-dark-3 bg-transparent px-5 py-2 text-base font-medium text-white transition hover:border-primary hover:bg-primary hover:text-white">
-              Sign Out
-            </button>
+            <SubmitButton
+              className="inline-block cursor-pointer rounded-md border border-dark-3 bg-transparent px-6 py-2 text-sm font-medium text-body-color transition hover:border-red-500 hover:bg-red-500 hover:text-white"
+            >
+              Sign out
+            </SubmitButton>
           </form>
         </header>
 
@@ -75,7 +83,7 @@ export default async function DashboardPage(props: { searchParams: Promise<{ mes
               {message}
             </div>
           )}
-          <form action={saveSettings} className="space-y-6">
+          <form className="space-y-6">
             
             <div className="mb-6">
               <label htmlFor="tmdb_api_key" className="mb-[10px] block text-base font-medium text-white">
@@ -97,14 +105,40 @@ export default async function DashboardPage(props: { searchParams: Promise<{ mes
             </div>
 
             <div className="flex justify-end pt-4 border-t border-dark-3">
-              <button
-                type="submit"
-                className="cursor-pointer rounded-md border border-primary bg-primary px-8 py-3 text-base font-medium text-white transition hover:bg-opacity-90"
+              <SubmitButton
+                formAction={saveSettings}
+                className="w-full sm:w-auto cursor-pointer rounded-md border border-primary bg-primary px-8 py-3 text-base font-medium text-white transition hover:bg-opacity-90"
               >
                 Save & Sync to Grayjay
-              </button>
+              </SubmitButton>
             </div>
           </form>
+        </div>
+
+        {/* Installation Card - Compact */}
+        <div className="mt-8 pt-8 border-t border-dark-3 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="bg-white p-2 rounded-lg shadow-sm shrink-0">
+              <QRCode 
+                value={grayjayDeepLink} 
+                size={64}
+                style={{ height: "auto", maxWidth: "100%", width: "64px" }}
+                viewBox={`0 0 256 256`}
+              />
+            </div>
+            <div className="text-left">
+              <h2 className="text-lg font-bold text-white mb-1">Install Plugin</h2>
+              <p className="text-sm text-dark-6">Scan QR or open directly in Grayjay.</p>
+            </div>
+          </div>
+          
+          <a 
+            href={grayjayDeepLink}
+            className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 rounded-md bg-primary/10 border border-primary/20 text-primary px-6 py-3 text-sm font-medium transition hover:bg-primary hover:text-white"
+          >
+            <Smartphone className="w-4 h-4" />
+            Open in Grayjay
+          </a>
         </div>
       </div>
     </div>

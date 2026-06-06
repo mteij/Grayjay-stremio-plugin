@@ -42,7 +42,7 @@ try {
 
     // 2. Decode private key
     let privateKeyPem = envKey;
-    if (!envKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    if (!envKey.includes('-----BEGIN PRIVATE KEY-----') && !envKey.includes('-----BEGIN RSA PRIVATE KEY-----')) {
         // If it doesn't look like PEM, it must be the Base64 we asked them to paste
         privateKeyPem = Buffer.from(envKey.replace(/[^A-Za-z0-9+/=]/g, ''), 'base64').toString('utf8');
     }
@@ -50,7 +50,7 @@ try {
     // CRITICAL: OpenSSL 3.0 strictly crashes if PEM strings have \r\n line endings (common when pasting from Windows)
     privateKeyPem = privateKeyPem.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     
-    if (!privateKeyPem.includes('-----END PRIVATE KEY-----')) {
+    if (!privateKeyPem.includes('-----END PRIVATE KEY-----') && !privateKeyPem.includes('-----END RSA PRIVATE KEY-----')) {
         throw new Error('The private key is truncated! Please ensure you copy the ENTIRE key into Netlify.');
     }
 

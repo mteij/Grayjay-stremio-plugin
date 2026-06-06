@@ -11,7 +11,7 @@ export default function LoginSuccessPage() {
     // This allows Grayjay to intercept the URL and close the popup on mobile,
     // while Desktop users will be seamlessly redirected back to continue editing!
     const timeout = setTimeout(() => {
-      router.push('/dashboard?message=Settings+saved+successfully!')
+      window.location.href = '/dashboard'
     }, 500)
 
     return () => clearTimeout(timeout)

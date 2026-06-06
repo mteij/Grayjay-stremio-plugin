@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import QRCode from 'react-qr-code'
-import { Smartphone, Settings } from 'lucide-react'
+import { Smartphone, Settings, Github } from 'lucide-react'
 
 export default function Home() {
   const pluginUrl = 'https://greyjay-stremio.netlify.app/plugin/Config.json'
@@ -45,14 +45,23 @@ export default function Home() {
         </div>
 
         {/* Secondary Navigation */}
-        <div className="pt-6 border-t border-dark-3 w-full max-w-[300px] flex flex-col items-center">
+        <div className="pt-6 border-t border-dark-3 w-full max-w-[400px] flex flex-col sm:flex-row items-center justify-center gap-6">
           <Link 
             href="/login"
             className="inline-flex items-center justify-center gap-2 text-sm font-medium text-body-color transition hover:text-primary"
           >
             <Settings className="w-4 h-4" />
-            Configure Addons & TMDB Key
+            Configure Addons
           </Link>
+          <a 
+            href="https://github.com/mteij/Grayjay-stremio-pluggin"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 text-sm font-medium text-body-color transition hover:text-primary"
+          >
+            <Github className="w-4 h-4" />
+            Source Code
+          </a>
         </div>
       </div>
     </div>

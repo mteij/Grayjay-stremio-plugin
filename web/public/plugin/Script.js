@@ -231,37 +231,66 @@ source.getContentDetails = function(url) {
     const subtitles = [];
 
     /**
-     * Returns false for streams that are temporary, unavailable, or have no audio.
+     * Returns false for streams that are temporary, unavailable, or non-playable notices.
      */
     function isStreamValid(stream) {
         const text = ((stream.name || "") + " " + (stream.title || "")).toLowerCase();
-        // Filter out temporary/loading/unavailable streams
-        if (/loading|reloading|updating|not available|unavailable|addon error|install addon|configure|\u26a0/.test(text)) return false;
+        if (/loading|reloading|updating|not available|unavailable|addon error|install addon|configure|sync debrid|debrid account|select this stream|\u26a0/.test(text)) return false;
         return true;
     }
 
     /**
      * Builds a clean, human-readable source name from a Stremio stream object.
-     * stream.name is often "AddonName\nResolution" and stream.title has full file info.
+     *
+     * stream.name is typically multi-line, e.g.:
+     *   "[TB ⚡]\nComet\n2160p"   or   "⚡ [TB]\nTorz\n4320p"
+     * stream.title is multi-line with emoji prefixes, e.g.:
+     *   "📁 The.Boys.S05E06.2160p\n🎬 hevc\n⭐ WEB | 🔗 ETHEL\n..."
      */
     function parseStreamName(stream) {
-        const nameParts = (stream.name || "").split("\n");
-        const addonName = nameParts[0] ? nameParts[0].trim() : "Stream";
-        const nameQuality = nameParts[1] ? nameParts[1].trim() : "";
+        const nameParts = (stream.name || "").split("\n").map(p => p.trim()).filter(Boolean);
+        const addonName = nameParts[0] || "Stream";
 
-        // Try to extract resolution (e.g. 720p, 1080p, 4K, 2160p) from title or name quality
-        const combined = (stream.title || "") + " " + nameQuality;
-        const resMatch = combined.match(/(4K|2160p|1440p|1080p|720p|480p|360p)/i);
-        const resolution = resMatch ? resMatch[1].toUpperCase().replace("2160P", "4K") : (nameQuality || "?");
-
-        // Build a clean label: "[Resolution] | Title (truncated)" or fall back to addon name
-        const fileTitle = (stream.title || "").trim();
-        if (fileTitle) {
-            // Truncate long titles
-            const short = fileTitle.length > 60 ? fileTitle.substring(0, 57) + "..." : fileTitle;
-            return `${resolution} | ${short}`;
+        // Scan ALL name parts for a resolution token (it's usually the last line)
+        const resRegex = /(8K|4K|4320p|2160p|1440p|1080p|720p|480p|360p)/i;
+        let resolution = null;
+        for (let i = nameParts.length - 1; i >= 0; i--) {
+            const m = nameParts[i].match(resRegex);
+            if (m) { resolution = m[1]; break; }
         }
-        return `${addonName} ${resolution}`;
+        // Fallback: scan title for a resolution token
+        if (!resolution && stream.title) {
+            const m = stream.title.match(resRegex);
+            if (m) resolution = m[1];
+        }
+        // Normalise labels
+        if (resolution) {
+            resolution = resolution
+                .replace(/4320p/i, "8K")
+                .replace(/2160p/i, "4K")
+                .toUpperCase();
+        } else {
+            resolution = "?";
+        }
+
+        // Extract the first readable line from stream.title.
+        // Many addons prefix lines with emoji (📁 🎬 ⭐ …) – strip leading non-ASCII chars.
+        let fileTitle = "";
+        if (stream.title) {
+            const titleLines = stream.title.split("\n");
+            for (const line of titleLines) {
+                // Strip leading non-printable-ASCII characters (covers most emoji)
+                const cleaned = line.replace(/^[^\x20-\x7E]+/, "").trim();
+                // Accept the line if it has at least 6 printable chars and looks like a name
+                if (cleaned.length >= 6 && /\w{3}/.test(cleaned)) {
+                    fileTitle = cleaned.length > 65 ? cleaned.substring(0, 62) + "..." : cleaned;
+                    break;
+                }
+            }
+        }
+
+        if (fileTitle) return `${resolution} | ${fileTitle}`;
+        return `${addonName} · ${resolution}`;
     }
 
     for (const addon of _stremioAddons) {

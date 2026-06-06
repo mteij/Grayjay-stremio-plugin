@@ -21,7 +21,8 @@ if (fs.existsSync(envPath)) {
 
 let privateKeyBase64 = process.env.PLUGIN_PRIVATE_KEY;
 if (privateKeyBase64) {
-    privateKeyBase64 = privateKeyBase64.replace(/['"]/g, '').trim();
+    // Strip everything except pure Base64 characters to prevent silent truncation
+    privateKeyBase64 = privateKeyBase64.replace(/[^A-Za-z0-9+/=]/g, '');
 }
 
 if (!privateKeyBase64) {

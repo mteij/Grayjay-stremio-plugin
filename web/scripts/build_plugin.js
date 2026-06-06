@@ -42,7 +42,20 @@ try {
 
     // 2. Decode private key and extract public key
     const privateKeyPem = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
-    const privateKey = crypto.createPrivateKey(privateKeyPem);
+    
+    // Extract the raw DER payload from the PEM string to bypass OpenSSL PEM decoder bugs
+    const derBase64 = privateKeyPem
+        .replace('-----BEGIN PRIVATE KEY-----', '')
+        .replace('-----END PRIVATE KEY-----', '')
+        .replace(/\s+/g, ''); // strip all newlines and spaces
+        
+    const privateKeyDerBuffer = Buffer.from(derBase64, 'base64');
+    
+    const privateKey = crypto.createPrivateKey({
+        key: privateKeyDerBuffer,
+        format: 'der',
+        type: 'pkcs8'
+    });
     
     const publicKey = crypto.createPublicKey(privateKey);
     const pubKeyBase64 = publicKey.export({ type: 'spki', format: 'der' }).toString('base64');

@@ -27,20 +27,37 @@ function fetchUserSettings() {
 }
 
 function mapMovieToVideo(movie) {
+    // Fetch movie details to get runtime
+    let runtimeMinutes = 0;
+    try {
+        const detailResp = http.GET(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${_tmdbKey}&language=en-US`, {});
+        if (detailResp.code === 200) {
+            const detail = JSON.parse(detailResp.body);
+            runtimeMinutes = detail.runtime || 0;
+        }
+    } catch(e) { /* ignore */ }
+
+    const durationLabel = runtimeMinutes > 0
+        ? (runtimeMinutes >= 60
+            ? `${Math.floor(runtimeMinutes / 60)}h ${runtimeMinutes % 60}m`
+            : `${runtimeMinutes}m`)
+        : "Movie";
+
     return new PlatformVideo({
         id: new PlatformID("TMDB", movie.id.toString(), plugin.config.id, 1),
         name: movie.title || "Unknown Title",
         thumbnails: new Thumbnails([new Thumbnail("https://image.tmdb.org/t/p/w500" + movie.poster_path, 0)]),
-        author: new PlatformAuthorLink(new PlatformID("TMDB", "Movie", plugin.config.id, 1), "Movie", "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
+        author: new PlatformAuthorLink(new PlatformID("TMDB", "Movie", plugin.config.id, 1), durationLabel, "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
         datetime: movie.release_date ? Math.floor(new Date(movie.release_date).getTime() / 1000) : 0,
         url: "https://www.themoviedb.org/movie/" + movie.id,
         shareUrl: "https://www.themoviedb.org/movie/" + movie.id,
-        duration: 0,
+        duration: runtimeMinutes * 60,
         viewCount: 0,
         isLive: false,
         isShort: false
     });
 }
+
 
 function mapTvToPlaylist(tv) {
     // Fetch TV details to get season/episode counts

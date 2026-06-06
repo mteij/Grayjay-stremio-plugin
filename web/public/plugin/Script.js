@@ -38,12 +38,17 @@ function fetchUserSettings() {
 
 function mapMovieToVideo(movie) {
     return new PlatformVideo({
-        id: new PlatformID("TMDB", movie.id.toString(), plugin.config.id),
-        name: movie.title,
+        id: new PlatformID("TMDB", movie.id.toString(), plugin.config.id, 1),
+        name: movie.title || "Unknown Title",
         thumbnails: new Thumbnails([new Thumbnail("https://image.tmdb.org/t/p/w500" + movie.poster_path, 0)]),
-        author: new PlatformAuthorLink(new PlatformID("TMDB", "TMDB", plugin.config.id), "TMDB", "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
-        datetime: Math.floor(new Date(movie.release_date).getTime() / 1000),
-        url: "https://www.themoviedb.org/movie/" + movie.id
+        author: new PlatformAuthorLink(new PlatformID("TMDB", "TMDB", plugin.config.id, 1), "TMDB", "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
+        datetime: movie.release_date ? Math.floor(new Date(movie.release_date).getTime() / 1000) : 0,
+        url: "https://www.themoviedb.org/movie/" + movie.id,
+        shareUrl: "https://www.themoviedb.org/movie/" + movie.id,
+        duration: 0,
+        viewCount: 0,
+        isLive: false,
+        isShort: false
     });
 }
 
@@ -126,13 +131,17 @@ source.getContentDetails = function(url) {
     }
 
     return new PlatformVideoDetails({
-        id: new PlatformID("TMDB", tmdbId, plugin.config.id),
-        name: movieData.title,
+        id: new PlatformID("TMDB", tmdbId, plugin.config.id, 1),
+        name: movieData.title || "Unknown Title",
         thumbnails: new Thumbnails([new Thumbnail("https://image.tmdb.org/t/p/w500" + movieData.poster_path, 0)]),
-        author: new PlatformAuthorLink(new PlatformID("TMDB", "TMDB", plugin.config.id), "TMDB", "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
-        datetime: Math.floor(new Date(movieData.release_date).getTime() / 1000),
+        author: new PlatformAuthorLink(new PlatformID("TMDB", "TMDB", plugin.config.id, 1), "TMDB", "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
+        datetime: movieData.release_date ? Math.floor(new Date(movieData.release_date).getTime() / 1000) : 0,
         url: url,
-        description: movieData.overview,
+        shareUrl: url,
+        duration: 0,
+        viewCount: 0,
+        isLive: false,
+        description: movieData.overview || "",
         video: new VideoSourceDescriptor(sources)
     });
 };

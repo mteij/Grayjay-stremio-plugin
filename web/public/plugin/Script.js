@@ -43,15 +43,32 @@ function mapMovieToVideo(movie) {
 }
 
 function mapTvToPlaylist(tv) {
+    // Fetch TV details to get season/episode counts
+    let numberOfSeasons = 0;
+    let numberOfEpisodes = 0;
+    try {
+        const detailResp = http.GET(`https://api.themoviedb.org/3/tv/${tv.id}?api_key=${_tmdbKey}&language=en-US`, {});
+        if (detailResp.code === 200) {
+            const detail = JSON.parse(detailResp.body);
+            numberOfSeasons = detail.number_of_seasons || 0;
+            numberOfEpisodes = detail.number_of_episodes || 0;
+        }
+    } catch(e) { /* ignore */ }
+
+    const countLabel = numberOfSeasons > 0
+        ? (numberOfSeasons === 1 ? `1 Season · ${numberOfEpisodes} Episodes` : `${numberOfSeasons} Seasons · ${numberOfEpisodes} Episodes`)
+        : "TV Series";
+
     return new PlatformPlaylist({
         id: new PlatformID("TMDB", tv.id.toString(), plugin.config.id, 1),
         name: tv.name || tv.original_name || "Unknown TV Show",
-        author: new PlatformAuthorLink(new PlatformID("TMDB", "TV Series", plugin.config.id, 1), "TV Series", "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
+        author: new PlatformAuthorLink(new PlatformID("TMDB", "TV Series", plugin.config.id, 1), countLabel, "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
         thumbnail: "https://image.tmdb.org/t/p/w500" + tv.poster_path,
         url: "https://www.themoviedb.org/tv/" + tv.id,
-        videoCount: 0 // Will populate episodes inside details
+        videoCount: numberOfEpisodes || 0
     });
 }
+
 
 source.enable = function(config) {
     try {

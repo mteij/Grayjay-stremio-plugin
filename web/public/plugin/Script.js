@@ -79,30 +79,59 @@ source.enable = function(config) {
 };
 
 // --- Infinite Scroll Pager: Home ---
+// Cycles through multiple TMDB endpoints for variety
+const HOME_SECTIONS = [
+    (page) => `https://api.themoviedb.org/3/trending/all/day?api_key=${_tmdbKey}&language=en-US&page=${page}`,
+    (page) => `https://api.themoviedb.org/3/movie/popular?api_key=${_tmdbKey}&language=en-US&page=${page}`,
+    (page) => `https://api.themoviedb.org/3/tv/popular?api_key=${_tmdbKey}&language=en-US&page=${page}`,
+    (page) => `https://api.themoviedb.org/3/movie/top_rated?api_key=${_tmdbKey}&language=en-US&page=${page}`,
+    (page) => `https://api.themoviedb.org/3/tv/top_rated?api_key=${_tmdbKey}&language=en-US&page=${page}`,
+    (page) => `https://api.themoviedb.org/3/movie/now_playing?api_key=${_tmdbKey}&language=en-US&page=${page}`,
+    (page) => `https://api.themoviedb.org/3/tv/on_the_air?api_key=${_tmdbKey}&language=en-US&page=${page}`,
+];
+
 class TmdbHomePager extends VideoPager {
-    constructor(page) {
-        const data = TmdbHomePager.fetch(page);
-        super(data.items, data.hasMore, { page: page });
-    }
-    static fetch(page) {
-        const url = `https://api.themoviedb.org/3/trending/all/week?api_key=${_tmdbKey}&language=en-US&page=${page}`;
-        const response = http.GET(url, {});
-        const body = JSON.parse(response.body);
-        const items = (body.results || []).filter(i => i.media_type === "movie" || i.media_type === "tv").map(i => {
-            if (i.media_type === "tv") return mapTvToPlaylist(i);
-            return mapMovieToVideo(i);
-        });
-        return { items, hasMore: page < (body.total_pages || 1) };
-    }
-    nextPage() {
-        const next = this.context.page + 1;
-        const data = TmdbHomePager.fetch(next);
+    constructor() {
+        super([], true, { section: 0, page: 1 });
+        const data = TmdbHomePager.fetch(0, 1);
         this.results = data.items;
         this.hasMore = data.hasMore;
-        this.context.page = next;
+    }
+    static fetch(section, page) {
+        const url = HOME_SECTIONS[section](page);
+        const response = http.GET(url, {});
+        const body = JSON.parse(response.body);
+        const totalPages = body.total_pages || 1;
+
+        const items = (body.results || [])
+            .filter(i => i.media_type === "movie" || i.media_type === "tv"
+                      || body.results[0]?.title !== undefined   // movie-only endpoint
+                      || body.results[0]?.name !== undefined)   // tv-only endpoint
+            .map(i => {
+                // Movie-only endpoints don't set media_type, detect by field presence
+                const isMovie = i.media_type === "movie" || (i.title && !i.name);
+                const isTv    = i.media_type === "tv"    || (i.name  && !i.title);
+                if (isTv) return mapTvToPlaylist(i);
+                return mapMovieToVideo(i);
+            });
+
+        // Move to next section after exhausting all pages
+        const nextPage    = page < totalPages ? page + 1 : 1;
+        const nextSection = page < totalPages ? section : (section + 1) % HOME_SECTIONS.length;
+        const hasMore     = section < HOME_SECTIONS.length - 1 || page < totalPages;
+
+        return { items, hasMore, nextSection, nextPage };
+    }
+    nextPage() {
+        const data = TmdbHomePager.fetch(this.context.section, this.context.page);
+        this.results      = data.items;
+        this.hasMore      = data.hasMore;
+        this.context.section = data.nextSection;
+        this.context.page    = data.nextPage;
         return this;
     }
 }
+
 
 // --- Infinite Scroll Pager: Search ---
 class TmdbSearchPager extends VideoPager {
@@ -132,7 +161,7 @@ class TmdbSearchPager extends VideoPager {
 
 source.getHome = function() {
     fetchUserSettings();
-    return new TmdbHomePager(1);
+    return new TmdbHomePager();
 };
 
 source.search = function(query) {

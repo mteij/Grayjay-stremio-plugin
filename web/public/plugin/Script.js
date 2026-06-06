@@ -5,21 +5,11 @@ let _tmdbKey = "";
 function fetchUserSettings() {
     if (_settings) return _settings;
 
-    const auth = plugin.getAuth();
-    if (!auth) {
+    if (!bridge.isLoggedIn()) {
         throw new ScriptException("No authentication found. Please log in.");
     }
 
-    let cookieString = "";
-    if (typeof auth === 'object') {
-        cookieString = Object.keys(auth).map(k => `${k}=${auth[k]}`).join("; ");
-    } else {
-        cookieString = auth;
-    }
-
-    const response = http.GET("https://greyjay-stremio.netlify.app/api/settings", {
-        "Cookie": cookieString
-    });
+    const response = http.GET("https://greyjay-stremio.netlify.app/api/settings", {}, true);
 
     if (response.code !== 200) {
         throw new ScriptException("Failed to load settings. HTTP " + response.code);

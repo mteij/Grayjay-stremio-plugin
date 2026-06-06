@@ -47,6 +47,9 @@ try {
         privateKeyPem = Buffer.from(envKey.replace(/[^A-Za-z0-9+/=]/g, ''), 'base64').toString('utf8');
     }
     
+    // CRITICAL: OpenSSL 3.0 strictly crashes if PEM strings have \r\n line endings (common when pasting from Windows)
+    privateKeyPem = privateKeyPem.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    
     if (!privateKeyPem.includes('-----END PRIVATE KEY-----')) {
         throw new Error('The private key is truncated! Please ensure you copy the ENTIRE key into Netlify.');
     }

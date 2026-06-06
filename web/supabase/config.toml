@@ -1,0 +1,17 @@
+project_id = "default"
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+
+[auth.email.template.confirmation]
+subject = "Confirm your Grayjay Addon Manager account"
+content_path = "./templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your Grayjay Addon Manager password"
+content_path = "./templates/recovery.html"
+
+[auth.email.template.magic_link]
+subject = "Your magic link for Grayjay Addon Manager"
+content_path = "./templates/magic-link.html"

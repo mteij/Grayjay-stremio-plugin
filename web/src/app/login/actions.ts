@@ -1,0 +1,88 @@
+'use server'
+
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
+import { createClient } from '@/utils/supabase/server'
+
+export async function login(formData: FormData) {
+  const supabase = await createClient()
+
+  const data = {
+    email: formData.get('email') as string,
+    password: formData.get('password') as string,
+  }
+
+  const { error } = await supabase.auth.signInWithPassword(data)
+
+  if (error) {
+    redirect('/login?error=Invalid login credentials')
+  }
+
+  revalidatePath('/', 'layout')
+  redirect('/dashboard')
+}
+
+export async function signup(formData: FormData) {
+  const supabase = await createClient()
+
+  const data = {
+    email: formData.get('email') as string,
+    password: formData.get('password') as string,
+  }
+
+  const origin = (await headers()).get('origin')
+
+  const { data: authData, error } = await supabase.auth.signUp({
+    ...data,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback`,
+    },
+  })
+
+  if (error) {
+    redirect('/login?error=Could not create account: ' + error.message)
+  }
+
+  if (authData.user && !authData.session) {
+    redirect('/login?message=Success! Please check your email to confirm your account before logging in.')
+  }
+
+  revalidatePath('/', 'layout')
+  redirect('/dashboard')
+}
+
+export async function resetPassword(formData: FormData) {
+  const supabase = await createClient()
+  const email = formData.get('email') as string
+  const origin = (await headers()).get('origin')
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/update-password`,
+  })
+
+  if (error) {
+    redirect('/forgot-password?error=Could not send reset email: ' + error.message)
+  }
+
+  redirect('/forgot-password?message=Check your email for the password reset link.')
+}
+
+export async function magicLinkLogin(formData: FormData) {
+  const supabase = await createClient()
+  const email = formData.get('email') as string
+  const origin = (await headers()).get('origin')
+
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback`,
+    },
+  })
+
+  if (error) {
+    redirect('/login?error=Could not send magic link: ' + error.message)
+  }
+
+  redirect('/login?message=Check your email for the magic link.')
+}

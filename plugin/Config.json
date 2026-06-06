@@ -1,0 +1,28 @@
+{
+	"name": "Stremio Addons",
+	"description": "Watch content using your Stremio Addons mapped via TMDB.",
+	"author": "Michi",
+	"authorUrl": "",
+	"platformUrl": "https://www.themoviedb.org",
+	"repositoryUrl": "https://github.com/Michi/Grayjay-stremio-pluggin",
+	"sourceUrl": "https://greyjay-stremio.netlify.app/plugin/Config.json",
+	"scriptUrl": "./Script.js",
+	"version": 1,
+	"iconUrl": "",
+	"id": "e8e19e00-22c6-43b9-a411-cf0660601f01",
+	"scriptSignature": "",
+	"scriptPublicKey": "",
+	"packages": ["Http", "Utilities", "DOMParser"],
+	"allowEval": false,
+	"allowUrls": [
+		"everywhere"
+	],
+	"authentication": {
+		"userAgent": "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.230 Mobile Safari/537.36",
+		"completionUrl": "https://greyjay-stremio.netlify.app/dashboard*success=true*",
+		"loginUrl": "https://greyjay-stremio.netlify.app/login",
+		"headersToFind": ["authorization"],
+		"cookiesToFind": ["stremio_session_id", "sb-olslfmepnraovcoitkkr-auth-token.0", "sb-olslfmepnraovcoitkkr-auth-token.1"],
+		"cookiesExclOthers": false
+	}
+}

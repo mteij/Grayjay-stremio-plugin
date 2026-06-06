@@ -39,8 +39,8 @@ function mapMovieToVideo(movie) {
 
     const durationLabel = runtimeMinutes > 0
         ? (runtimeMinutes >= 60
-            ? `${Math.floor(runtimeMinutes / 60)}h ${runtimeMinutes % 60}m`
-            : `${runtimeMinutes}m`)
+            ? `Movie · ${Math.floor(runtimeMinutes / 60)}h ${runtimeMinutes % 60}m`
+            : `Movie · ${runtimeMinutes}m`)
         : "Movie";
 
     return new PlatformVideo({

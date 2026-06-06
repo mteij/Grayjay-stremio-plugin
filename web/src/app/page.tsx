@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import QRCode from 'react-qr-code'
-import { Smartphone, Settings, Github } from 'lucide-react'
+import { Smartphone, Settings, Code } from 'lucide-react'
 
 export default function Home() {
   const pluginUrl = 'https://greyjay-stremio.netlify.app/plugin/Config.json'
@@ -59,7 +59,7 @@ export default function Home() {
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 text-sm font-medium text-body-color transition hover:text-primary"
           >
-            <Github className="w-4 h-4" />
+            <Code className="w-4 h-4" />
             Source Code
           </a>
         </div>

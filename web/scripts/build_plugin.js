@@ -1,6 +1,6 @@
-const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const forge = require('node-forge');
 
 const pluginDir = path.join(__dirname, '..', 'public', 'plugin');
 const configPath = path.join(pluginDir, 'Config.json');
@@ -26,7 +26,6 @@ if (!envKey) {
     process.exit(0);
 }
 
-// Print string length to debug truncation issues
 console.log(`Loaded private key from environment. Length: ${envKey.length} characters.`);
 
 try {
@@ -42,26 +41,31 @@ try {
 
     // 2. Decode private key
     let privateKeyPem = envKey;
-    if (!envKey.includes('-----BEGIN PRIVATE KEY-----') && !envKey.includes('-----BEGIN RSA PRIVATE KEY-----')) {
-        // If it doesn't look like PEM, it must be the Base64 we asked them to paste
+    
+    // Aggressively extract pure PEM block, ignoring quotes, spaces, or anything else
+    const pemMatch = envKey.match(/-----BEGIN [\s\S]+?-----END [^-]+-----/);
+    
+    if (pemMatch) {
+        privateKeyPem = pemMatch[0];
+    } else {
+        // If no PEM found, try decoding it as raw base64
         privateKeyPem = Buffer.from(envKey.replace(/[^A-Za-z0-9+/=]/g, ''), 'base64').toString('utf8');
+        const fallbackMatch = privateKeyPem.match(/-----BEGIN [\s\S]+?-----END [^-]+-----/);
+        if (fallbackMatch) {
+            privateKeyPem = fallbackMatch[0];
+        } else {
+            throw new Error('The private key is truncated or invalid! No valid PEM headers found.');
+        }
     }
     
-    // CRITICAL: OpenSSL 3.0 strictly crashes if PEM strings have \r\n line endings (common when pasting from Windows)
-    privateKeyPem = privateKeyPem.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    // Pure Javascript RSA decoding using node-forge (bypasses ALL OpenSSL FIPS bugs on Netlify)
+    const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
+    const publicKey = forge.pki.setRsaPublicKey(privateKey.n, privateKey.e);
     
-    if (!privateKeyPem.includes('-----END PRIVATE KEY-----') && !privateKeyPem.includes('-----END RSA PRIVATE KEY-----')) {
-        throw new Error('The private key is truncated! Please ensure you copy the ENTIRE key into Netlify.');
-    }
-    
-    // Bypass OpenSSL auto-decoder by explicitly declaring the format
-    const privateKey = crypto.createPrivateKey({
-        key: privateKeyPem,
-        format: 'pem',
-        type: 'pkcs1'
-    });
-    const publicKey = crypto.createPublicKey(privateKey);
-    const pubKeyBase64 = publicKey.export({ type: 'spki', format: 'der' }).toString('base64');
+    // Export Public Key to SPKI DER Base64 format for Grayjay
+    const publicKeyAsn1 = forge.pki.publicKeyToAsn1(publicKey);
+    const publicKeyDer = forge.asn1.toDer(publicKeyAsn1).getBytes();
+    const pubKeyBase64 = forge.util.encode64(publicKeyDer);
 
     // 3. Normalize Script.js line endings to pure LF
     let scriptContent = fs.readFileSync(scriptPath, 'utf8');
@@ -69,15 +73,14 @@ try {
     fs.writeFileSync(scriptPath, scriptContent);
 
     // 4. Sign the file
-    const scriptBytes = fs.readFileSync(scriptPath);
-    const sign = crypto.createSign('SHA256');
-    sign.update(scriptBytes);
-    sign.end();
-    const signature = sign.sign(privateKey).toString('base64');
+    const md = forge.md.sha256.create();
+    md.update(fs.readFileSync(scriptPath, 'utf8'), 'utf8');
+    const signatureBytes = privateKey.sign(md);
+    const signatureBase64 = forge.util.encode64(signatureBytes);
 
     // 5. Save the updated config
     config.scriptPublicKey = pubKeyBase64;
-    config.scriptSignature = signature;
+    config.scriptSignature = signatureBase64;
     fs.writeFileSync(configPath, JSON.stringify(config, null, 4));
 
     console.log('Successfully updated Config.json with new signature and timestamp-based version!');

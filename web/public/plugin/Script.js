@@ -61,33 +61,66 @@ source.enable = function(config) {
     }
 };
 
+// --- Infinite Scroll Pager: Home ---
+class TmdbHomePager extends VideoPager {
+    constructor(page) {
+        const data = TmdbHomePager.fetch(page);
+        super(data.items, data.hasMore, { page: page });
+    }
+    static fetch(page) {
+        const url = `https://api.themoviedb.org/3/trending/all/week?api_key=${_tmdbKey}&language=en-US&page=${page}`;
+        const response = http.GET(url, {});
+        const body = JSON.parse(response.body);
+        const items = (body.results || []).filter(i => i.media_type === "movie" || i.media_type === "tv").map(i => {
+            if (i.media_type === "tv") return mapTvToPlaylist(i);
+            return mapMovieToVideo(i);
+        });
+        return { items, hasMore: page < (body.total_pages || 1) };
+    }
+    nextPage() {
+        const next = this.context.page + 1;
+        const data = TmdbHomePager.fetch(next);
+        this.results = data.items;
+        this.hasMore = data.hasMore;
+        this.context.page = next;
+        return this;
+    }
+}
+
+// --- Infinite Scroll Pager: Search ---
+class TmdbSearchPager extends VideoPager {
+    constructor(query, page) {
+        const data = TmdbSearchPager.fetch(query, page);
+        super(data.items, data.hasMore, { query: query, page: page });
+    }
+    static fetch(query, page) {
+        const url = `https://api.themoviedb.org/3/search/multi?api_key=${_tmdbKey}&query=${encodeURIComponent(query)}&page=${page}`;
+        const response = http.GET(url, {});
+        const body = JSON.parse(response.body);
+        const items = (body.results || []).filter(i => i.media_type === "movie" || i.media_type === "tv").map(i => {
+            if (i.media_type === "tv") return mapTvToPlaylist(i);
+            return mapMovieToVideo(i);
+        });
+        return { items, hasMore: page < (body.total_pages || 1) };
+    }
+    nextPage() {
+        const next = this.context.page + 1;
+        const data = TmdbSearchPager.fetch(this.context.query, next);
+        this.results = data.items;
+        this.hasMore = data.hasMore;
+        this.context.page = next;
+        return this;
+    }
+}
+
 source.getHome = function() {
     fetchUserSettings();
-    // Use trending/all/week to get a mix of movies and TV shows
-    const url = `https://api.themoviedb.org/3/trending/all/week?api_key=${_tmdbKey}&language=en-US&page=1`;
-    const response = http.GET(url, {});
-    const results = JSON.parse(response.body).results;
-
-    const items = results.filter(i => i.media_type === "movie" || i.media_type === "tv").map(i => {
-        if (i.media_type === "tv") return mapTvToPlaylist(i);
-        return mapMovieToVideo(i);
-    });
-
-    return new VideoPager(items, false);
+    return new TmdbHomePager(1);
 };
 
 source.search = function(query) {
     fetchUserSettings();
-    const url = `https://api.themoviedb.org/3/search/multi?api_key=${_tmdbKey}&query=${encodeURIComponent(query)}&page=1`;
-    const response = http.GET(url, {});
-    const results = JSON.parse(response.body).results;
-    
-    const items = results.filter(i => i.media_type === "movie" || i.media_type === "tv").map(i => {
-        if (i.media_type === "tv") return mapTvToPlaylist(i);
-        return mapMovieToVideo(i);
-    });
-
-    return new VideoPager(items, false);
+    return new TmdbSearchPager(query, 1);
 };
 
 source.getSearchCapabilities = () => {
@@ -154,8 +187,14 @@ source.getContentDetails = function(url) {
         description = movieData.overview || "";
     }
 
-    // Query Stremio Addons for streams
+    // Build the subtitle endpoint from the stream endpoint
+    // e.g. stream/movie/tt1234.json -> subtitles/movie/tt1234.json
+    const subtitleEndpoint = streamEndpoint.replace("stream/", "subtitles/");
+
+    // Query Stremio Addons for streams AND subtitles
     const sources = [];
+    const subtitles = [];
+
     for (const addon of _stremioAddons) {
         try {
             const streamUrl = addon.replace("manifest.json", streamEndpoint);
@@ -178,7 +217,29 @@ source.getContentDetails = function(url) {
                 }
             }
         } catch(e) {
-            // Ignore addon errors
+            // Ignore addon stream errors
+        }
+
+        // Fetch subtitles from this addon
+        try {
+            const subUrl = addon.replace("manifest.json", subtitleEndpoint);
+            const subResp = http.GET(subUrl, {});
+            if (subResp.code === 200) {
+                const subData = JSON.parse(subResp.body);
+                if (subData && subData.subtitles) {
+                    for (const sub of subData.subtitles) {
+                        if (sub.url) {
+                            subtitles.push(new SubtitleSource({
+                                url: sub.url,
+                                name: sub.lang || sub.id || "Unknown",
+                                format: sub.url.includes(".vtt") ? "text/vtt" : "text/srt"
+                            }));
+                        }
+                    }
+                }
+            }
+        } catch(e) {
+            // Ignore addon subtitle errors
         }
     }
 
@@ -194,7 +255,8 @@ source.getContentDetails = function(url) {
         viewCount: 0,
         isLive: false,
         description: description,
-        video: new VideoSourceDescriptor(sources)
+        video: new VideoSourceDescriptor(sources),
+        subtitles: subtitles
     });
 };
 

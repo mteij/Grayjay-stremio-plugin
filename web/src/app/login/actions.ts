@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 
 export async function login(formData: FormData) {
@@ -13,10 +13,20 @@ export async function login(formData: FormData) {
     password: formData.get('password') as string,
   }
 
-  const { error } = await supabase.auth.signInWithPassword(data)
+  const { data: authData, error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
     redirect('/login?error=Invalid login credentials')
+  }
+
+  if (authData.session) {
+    const cookieStore = await cookies()
+    cookieStore.set('grayjay-api-token', authData.session.access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/'
+    })
   }
 
   revalidatePath('/', 'layout')
@@ -46,6 +56,16 @@ export async function signup(formData: FormData) {
 
   if (authData.user && !authData.session) {
     redirect('/login?message=Success! Please check your email to confirm your account before logging in.')
+  }
+
+  if (authData.session) {
+    const cookieStore = await cookies()
+    cookieStore.set('grayjay-api-token', authData.session.access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/'
+    })
   }
 
   revalidatePath('/', 'layout')

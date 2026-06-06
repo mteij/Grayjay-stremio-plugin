@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 
 export async function GET() {
   const supabase = await createClient()
+  const cookieStore = await cookies()
+  const apiToken = cookieStore.get('grayjay-api-token')?.value
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  let userResponse = apiToken 
+    ? await supabase.auth.getUser(apiToken)
+    : await supabase.auth.getUser()
+
+  const { data: { user }, error: authError } = userResponse
 
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

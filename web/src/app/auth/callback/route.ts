@@ -10,10 +10,16 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error && data.session) {
+      const response = NextResponse.redirect(`${origin}${next}`)
+      response.cookies.set('grayjay-api-token', data.session.access_token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        path: '/'
+      })
+      return response
     }
   }
 

@@ -53,8 +53,13 @@ try {
     if (!privateKeyPem.includes('-----END PRIVATE KEY-----') && !privateKeyPem.includes('-----END RSA PRIVATE KEY-----')) {
         throw new Error('The private key is truncated! Please ensure you copy the ENTIRE key into Netlify.');
     }
-
-    const privateKey = crypto.createPrivateKey(privateKeyPem);
+    
+    // Bypass OpenSSL auto-decoder by explicitly declaring the format
+    const privateKey = crypto.createPrivateKey({
+        key: privateKeyPem,
+        format: 'pem',
+        type: 'pkcs1'
+    });
     const publicKey = crypto.createPublicKey(privateKey);
     const pubKeyBase64 = publicKey.export({ type: 'spki', format: 'der' }).toString('base64');
 

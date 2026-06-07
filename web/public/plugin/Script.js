@@ -39,7 +39,7 @@ function tmdbGet(endpoint) {
     
     const response = http.GET(url, headers);
     if (response.code !== 200) {
-        throw new ScriptException("TMDB API Error " + response.code + ": " + response.body);
+        throw new ScriptException("TMDB API Error " + response.code + ": " + response.body + " | Key: [" + _tmdbKey + "] | Len: " + _tmdbKey.length);
     }
     return JSON.parse(response.body);
 }

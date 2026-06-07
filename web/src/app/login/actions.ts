@@ -126,3 +126,20 @@ export async function updatePassword(formData: FormData) {
 
   redirect('/dashboard')
 }
+
+export async function continueToDashboard() {
+  const supabase = await createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+
+  if (session) {
+    const cookieStore = await cookies()
+    cookieStore.set('grayjay-api-token', session.access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/'
+    })
+  }
+
+  redirect('/dashboard')
+}

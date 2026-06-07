@@ -17,7 +17,7 @@ function fetchUserSettings() {
         cookieString = auth;
     }
 
-    const response = http.GET("http://100.64.89.155:3000/api/settings", {
+    const response = http.GET("https://greyjay-stremio.netlify.app/api/settings", {
         "Cookie": cookieString
     });
 
@@ -59,7 +59,10 @@ source.getHome = function() {
     fetchUserSettings();
     const url = `https://api.themoviedb.org/3/movie/popular?api_key=${_tmdbKey}&language=en-US&page=1`;
     const response = http.GET(url, {});
-    const movies = JSON.parse(response.body).results;
+    if (response.code !== 200) {
+        throw new ScriptException("TMDB API Error: " + response.code);
+    }
+    const movies = JSON.parse(response.body).results || [];
 
     return new VideoPager(movies.map(mapMovieToVideo), false);
 };
@@ -68,7 +71,10 @@ source.search = function(query) {
     fetchUserSettings();
     const url = `https://api.themoviedb.org/3/search/movie?api_key=${_tmdbKey}&query=${encodeURIComponent(query)}&page=1`;
     const response = http.GET(url, {});
-    const movies = JSON.parse(response.body).results;
+    if (response.code !== 200) {
+        throw new ScriptException("TMDB API Error: " + response.code);
+    }
+    const movies = JSON.parse(response.body).results || [];
     
     return new VideoPager(movies.map(mapMovieToVideo), false);
 };
@@ -92,6 +98,9 @@ source.getContentDetails = function(url) {
     // Get Movie Details + External IDs (IMDB ID)
     const tmdbUrl = `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${_tmdbKey}&append_to_response=external_ids`;
     const tmdbResponse = http.GET(tmdbUrl, {});
+    if (tmdbResponse.code !== 200) {
+        throw new ScriptException("TMDB API Error: " + tmdbResponse.code);
+    }
     const movieData = JSON.parse(tmdbResponse.body);
     
     const imdbId = movieData.external_ids?.imdb_id;

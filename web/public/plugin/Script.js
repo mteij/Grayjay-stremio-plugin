@@ -5,32 +5,11 @@ let _tmdbKey = "";
 function fetchUserSettings() {
     if (_settings) return _settings;
 
-    const auth = plugin.getAuth();
-    if (!auth) {
+    if (!bridge.isLoggedIn()) {
         throw new ScriptException("No authentication found. Please log in.");
     }
 
-    let cookieString = "";
-    let authObj = auth;
-    
-    // Grayjay mobile sometimes returns auth as a JSON string instead of an object
-    if (typeof auth === 'string') {
-        try {
-            authObj = JSON.parse(auth);
-        } catch(e) {
-            authObj = auth;
-        }
-    }
-
-    if (typeof authObj === 'object' && authObj !== null) {
-        cookieString = Object.keys(authObj).map(k => `${k}=${authObj[k]}`).join("; ");
-    } else {
-        cookieString = authObj;
-    }
-
-    const response = http.GET("https://grayjay-stremio.netlify.app/api/settings", {
-        "Cookie": cookieString
-    });
+    const response = http.GET("https://grayjay-stremio.netlify.app/api/settings", {}, true);
 
     if (response.code !== 200) {
         throw new ScriptException("Failed to load settings. HTTP " + response.code);

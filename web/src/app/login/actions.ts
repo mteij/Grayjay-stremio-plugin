@@ -106,3 +106,23 @@ export async function magicLinkLogin(formData: FormData) {
 
   redirect('/login?message=Check your email for the magic link.')
 }
+
+export async function updatePassword(formData: FormData) {
+  const supabase = await createClient()
+  const password = formData.get('password') as string
+  const confirmPassword = formData.get('confirmPassword') as string
+
+  if (password !== confirmPassword) {
+    redirect('/update-password?error=Passwords do not match')
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: password
+  })
+
+  if (error) {
+    redirect('/update-password?error=Could not update password: ' + error.message)
+  }
+
+  redirect('/dashboard')
+}

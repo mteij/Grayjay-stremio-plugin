@@ -4,6 +4,7 @@ CREATE TABLE user_settings (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   tmdb_api_key TEXT,
   stremio_addons JSONB DEFAULT '[]'::jsonb,
+  stream_preferences JSONB DEFAULT '{}'::jsonb,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 

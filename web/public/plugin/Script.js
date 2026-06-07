@@ -63,13 +63,24 @@ function mapMovieToVideo(item) {
     const title = isTv ? item.name : item.title;
     const date = isTv ? item.first_air_date : item.release_date;
 
+    if (isTv) {
+        return new PlatformPlaylist({
+            id: new PlatformID("TMDB", item.id.toString(), plugin.config.id),
+            name: title || "Unknown Title",
+            author: new PlatformAuthorLink(new PlatformID("TMDB", "TMDB", plugin.config.id), "TMDB", "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
+            datetime: date ? Math.floor(new Date(date).getTime() / 1000) : 0,
+            url: `https://www.themoviedb.org/tv/${item.id}`,
+            videoCount: 0 // Will be populated when getPlaylist is called
+        });
+    }
+
     return new PlatformVideo({
         id: new PlatformID("TMDB", item.id.toString(), plugin.config.id),
         name: title || "Unknown Title",
         thumbnails: new Thumbnails([new Thumbnail(getPosterUrl(item.id, type, item.poster_path, item.backdrop_path), 0)]),
         author: new PlatformAuthorLink(new PlatformID("TMDB", "TMDB", plugin.config.id), "TMDB", "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
         datetime: date ? Math.floor(new Date(date).getTime() / 1000) : 0,
-        url: `https://www.themoviedb.org/${type}/${item.id}`,
+        url: `https://www.themoviedb.org/movie/${item.id}`,
         duration: 0 // Prevents UI glitches on Desktop
     });
 }
@@ -83,8 +94,8 @@ source.enable = function(config) {
 };
 
 function getTmdbFeedUrl(page) {
-    const category = plugin.config.homeFeedCategory || "0";
-    const type = plugin.config.homeFeedType || "0";
+    const category = (plugin.config.homeFeedCategory !== undefined ? plugin.config.homeFeedCategory : 0).toString();
+    const type = (plugin.config.homeFeedType !== undefined ? plugin.config.homeFeedType : 0).toString();
     
     let endpoint = "";
     if (category === "0") { // Trending

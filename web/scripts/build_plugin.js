@@ -36,7 +36,7 @@ try {
     config.version = newVersion;
     
     // Append cache-buster to bypass Grayjay app cache
-    config.scriptUrl = `https://greyjay-stremio.netlify.app/plugin/Script.js?v=${newVersion}`;
+    config.scriptUrl = `https://grayjay-stremio.netlify.app/plugin/Script.js?v=${newVersion}`;
     console.log(`Bumping plugin version to timestamp ${newVersion}...`);
 
     // 2. Decode private key

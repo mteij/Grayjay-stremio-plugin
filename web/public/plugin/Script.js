@@ -48,22 +48,28 @@ function tmdbGet(endpoint) {
     return JSON.parse(response.body);
 }
 
-function getPosterUrl(tmdbId, tmdbPosterPath, tmdbBackdropPath) {
+function getPosterUrl(tmdbId, type, tmdbPosterPath, tmdbBackdropPath) {
     const rpdbKey = _settings?.integrations?.rpdb_key;
     if (rpdbKey && rpdbKey.trim() !== '') {
-        return `https://api.ratingposterdb.com/${rpdbKey}/tmdb/backdrop-default/movie-${tmdbId}.jpg`;
+        // Free RPDB tiers only support poster-default, not backdrop-default. Grayjay will center-crop it.
+        return `https://api.ratingposterdb.com/${rpdbKey}/tmdb/poster-default/${type}-${tmdbId}.jpg`;
     }
     return "https://image.tmdb.org/t/p/w500" + (tmdbBackdropPath || tmdbPosterPath);
 }
 
-function mapMovieToVideo(movie) {
+function mapMovieToVideo(item) {
+    const isTv = item.media_type === "tv" || item.name !== undefined;
+    const type = isTv ? "tv" : "movie";
+    const title = isTv ? item.name : item.title;
+    const date = isTv ? item.first_air_date : item.release_date;
+
     return new PlatformVideo({
-        id: new PlatformID("TMDB", movie.id.toString(), plugin.config.id),
-        name: movie.title,
-        thumbnails: new Thumbnails([new Thumbnail(getPosterUrl(movie.id, movie.poster_path, movie.backdrop_path), 0)]),
+        id: new PlatformID("TMDB", item.id.toString(), plugin.config.id),
+        name: title || "Unknown Title",
+        thumbnails: new Thumbnails([new Thumbnail(getPosterUrl(item.id, type, item.poster_path, item.backdrop_path), 0)]),
         author: new PlatformAuthorLink(new PlatformID("TMDB", "TMDB", plugin.config.id), "TMDB", "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
-        datetime: Math.floor(new Date(movie.release_date).getTime() / 1000),
-        url: "https://www.themoviedb.org/movie/" + movie.id,
+        datetime: date ? Math.floor(new Date(date).getTime() / 1000) : 0,
+        url: `https://www.themoviedb.org/${type}/${item.id}`,
         duration: 0 // Prevents UI glitches on Desktop
     });
 }
@@ -76,13 +82,33 @@ source.enable = function(config) {
     }
 };
 
+function getTmdbFeedUrl(page) {
+    const category = plugin.config.homeFeedCategory || "0";
+    const type = plugin.config.homeFeedType || "0";
+    
+    let endpoint = "";
+    if (category === "0") { // Trending
+        if (type === "1") endpoint = "trending/movie/day";
+        else if (type === "2") endpoint = "trending/tv/day";
+        else endpoint = "trending/all/day";
+    } else {
+        const media = (type === "2") ? "tv" : "movie";
+        if (category === "1") endpoint = `${media}/popular`;
+        else if (category === "2") endpoint = `${media}/top_rated`;
+        else if (category === "3") {
+            endpoint = (media === "tv") ? "tv/airing_today" : "movie/now_playing";
+        }
+    }
+    return `https://api.themoviedb.org/3/${endpoint}?language=en-US&page=${page}`;
+}
+
 function getHomeMovies(page) {
     fetchUserSettings();
-    const response = tmdbGet(`https://api.themoviedb.org/3/movie/popular?language=en-US&page=${page}`);
-    const movies = response.results || [];
+    const response = tmdbGet(getTmdbFeedUrl(page));
+    const items = response.results || [];
     const hasMore = response.page < response.total_pages;
 
-    const pager = new VideoPager(movies.map(mapMovieToVideo), hasMore);
+    const pager = new VideoPager(items.map(mapMovieToVideo), hasMore);
     pager.nextPage = function() {
         return getHomeMovies(page + 1);
     };
@@ -95,11 +121,15 @@ source.getHome = function() {
 
 function getSearchMovies(query, page) {
     fetchUserSettings();
-    const response = tmdbGet(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&page=${page}`);
-    const movies = response.results || [];
+    // Use multi-search to find both movies and tv shows
+    const response = tmdbGet(`https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(query)}&page=${page}`);
+    const items = response.results || [];
     const hasMore = response.page < response.total_pages;
     
-    const pager = new VideoPager(movies.map(mapMovieToVideo), hasMore);
+    // Filter out people from multi-search
+    const validItems = items.filter(item => item.media_type === "movie" || item.media_type === "tv");
+    
+    const pager = new VideoPager(validItems.map(mapMovieToVideo), hasMore);
     pager.nextPage = function() {
         return getSearchMovies(query, page + 1);
     };
@@ -110,8 +140,56 @@ source.search = function(query) {
     return getSearchMovies(query, 1);
 };
 
+source.isPlaylistUrl = function(url) {
+    return url.includes("themoviedb.org/tv/") && !url.includes("/season/");
+};
+
+source.getPlaylist = function(url) {
+    fetchUserSettings();
+    
+    const tmdbMatch = url.match(/\/tv\/(\d+)/);
+    if (!tmdbMatch) throw new ScriptException("Invalid TMDB TV URL");
+    const tvId = tmdbMatch[1];
+
+    const showData = tmdbGet(`https://api.themoviedb.org/3/tv/${tvId}?append_to_response=external_ids`);
+    const imdbId = showData.external_ids?.imdb_id;
+    if (!imdbId) throw new ScriptException("No IMDB ID found for this TV show");
+
+    const episodes = [];
+    
+    if (showData.seasons && showData.seasons.length > 0) {
+        for (const season of showData.seasons) {
+            if (season.season_number === 0) continue; // Skip specials
+            
+            const seasonData = tmdbGet(`https://api.themoviedb.org/3/tv/${tvId}/season/${season.season_number}`);
+            if (seasonData.episodes) {
+                for (const ep of seasonData.episodes) {
+                    episodes.push(new PlatformVideo({
+                        id: new PlatformID("TMDB", `${tvId}_${season.season_number}_${ep.episode_number}`, plugin.config.id),
+                        name: `S${season.season_number}E${ep.episode_number} - ${ep.name}`,
+                        thumbnails: new Thumbnails([new Thumbnail(getPosterUrl(tvId, "tv", ep.still_path || showData.poster_path, showData.backdrop_path), 0)]),
+                        author: new PlatformAuthorLink(new PlatformID("TMDB", "TMDB", plugin.config.id), "TMDB", "https://themoviedb.org", ""),
+                        datetime: ep.air_date ? Math.floor(new Date(ep.air_date).getTime() / 1000) : 0,
+                        url: `https://www.themoviedb.org/tv/${tvId}/season/${season.season_number}/episode/${ep.episode_number}`,
+                        duration: 0
+                    }));
+                }
+            }
+        }
+    }
+
+    return new PlatformPlaylistDetails({
+        name: showData.name,
+        author: new PlatformAuthorLink(new PlatformID("TMDB", "TMDB", plugin.config.id), "TMDB", "https://themoviedb.org", ""),
+        datetime: Math.floor(new Date(showData.first_air_date).getTime() / 1000),
+        url: url,
+        videoCount: episodes.length,
+        contents: new VideoPager(episodes, false)
+    });
+};
+
 source.isContentDetailsUrl = function(url) {
-    return url.includes("themoviedb.org/movie/");
+    return url.includes("themoviedb.org/movie/") || url.includes("/season/");
 };
 
 source.getSearchCapabilities = () => {
@@ -125,22 +203,43 @@ source.getSearchCapabilities = () => {
 source.getContentDetails = function(url) {
     fetchUserSettings();
     
-    // Extract TMDB ID from url
-    const tmdbMatch = url.match(/\/movie\/(\d+)/);
-    if (!tmdbMatch) throw new ScriptException("Invalid TMDB URL");
-    const tmdbId = tmdbMatch[1];
+    let isTv = url.includes("/season/");
+    let tmdbId, season, episode, movieData, imdbId, type, name, date, overview;
 
-    // Get Movie Details + External IDs (IMDB ID)
-    const movieData = tmdbGet(`https://api.themoviedb.org/3/movie/${tmdbId}?append_to_response=external_ids`);
+    if (isTv) {
+        const match = url.match(/\/tv\/(\d+)\/season\/(\d+)\/episode\/(\d+)/);
+        if (!match) throw new ScriptException("Invalid Episode URL");
+        tmdbId = match[1];
+        season = match[2];
+        episode = match[3];
+        type = "series";
+
+        movieData = tmdbGet(`https://api.themoviedb.org/3/tv/${tmdbId}?append_to_response=external_ids`);
+        imdbId = movieData.external_ids?.imdb_id;
+        name = `${movieData.name} - S${season}E${episode}`;
+        date = movieData.first_air_date;
+        overview = movieData.overview;
+    } else {
+        const tmdbMatch = url.match(/\/movie\/(\d+)/);
+        if (!tmdbMatch) throw new ScriptException("Invalid TMDB URL");
+        tmdbId = tmdbMatch[1];
+        type = "movie";
+
+        movieData = tmdbGet(`https://api.themoviedb.org/3/movie/${tmdbId}?append_to_response=external_ids`);
+        imdbId = movieData.external_ids?.imdb_id;
+        name = movieData.title;
+        date = movieData.release_date;
+        overview = movieData.overview;
+    }
     
-    const imdbId = movieData.external_ids?.imdb_id;
-    if (!imdbId) throw new ScriptException("No IMDB ID found for this movie");
+    if (!imdbId) throw new ScriptException(`No IMDB ID found for this ${type}`);
 
     // Query Stremio Addons for streams
     const sources = [];
     for (const addon of _stremioAddons) {
         try {
-            const streamUrl = addon.replace("manifest.json", `stream/movie/${imdbId}.json`);
+            const streamId = isTv ? `${imdbId}:${season}:${episode}` : imdbId;
+            const streamUrl = addon.replace("manifest.json", `stream/${type}/${streamId}.json`);
             const streamResp = http.GET(streamUrl, {});
             if (streamResp.code === 200) {
                 const streamData = JSON.parse(streamResp.body);
@@ -176,13 +275,13 @@ source.getContentDetails = function(url) {
     });
 
     return new PlatformVideoDetails({
-        id: new PlatformID("TMDB", tmdbId, plugin.config.id),
-        name: movieData.title,
-        thumbnails: new Thumbnails([new Thumbnail(getPosterUrl(tmdbId, movieData.poster_path, movieData.backdrop_path), 0)]),
+        id: new PlatformID("TMDB", isTv ? `${tmdbId}_${season}_${episode}` : tmdbId, plugin.config.id),
+        name: name,
+        thumbnails: new Thumbnails([new Thumbnail(getPosterUrl(tmdbId, isTv ? "tv" : "movie", movieData.poster_path, movieData.backdrop_path), 0)]),
         author: new PlatformAuthorLink(new PlatformID("TMDB", "TMDB", plugin.config.id), "TMDB", "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
-        datetime: Math.floor(new Date(movieData.release_date).getTime() / 1000),
+        datetime: date ? Math.floor(new Date(date).getTime() / 1000) : 0,
         url: url,
-        description: movieData.overview,
+        description: overview,
         video: new VideoSourceDescriptor(sources)
     });
 };

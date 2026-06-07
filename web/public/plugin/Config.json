@@ -6,11 +6,11 @@
     "platformUrl": "https://greyjay-stremio.netlify.app",
     "repositoryUrl": "https://github.com/mteij/Grayjay-stremio-pluggin",
     "sourceUrl": "https://greyjay-stremio.netlify.app/plugin/Config.json",
-    "scriptUrl": "https://greyjay-stremio.netlify.app/plugin/Script.js?v=1780827970",
-    "version": 1780827970,
+    "scriptUrl": "https://greyjay-stremio.netlify.app/plugin/Script.js?v=1780828195",
+    "version": 1780828195,
     "iconUrl": "https://greyjay-stremio.netlify.app/plugin/icon.png",
     "id": "e8e19e00-22c6-43b9-a411-cf0660601f01",
-    "scriptSignature": "YdOnUDcWysZ0hyQU/S0v+L2+wI18J2ie5QwIagZC7v/pgO2rm2R9Pl7shANJbYyTbnR4HRASWSozlhATGu7mH99Sx7q/cT6+OS7a6R1rR6yav4ylV+vBnS9aDBwK4IPHmItJTEo0LQTpSGC8hGhAIhOOMr/4r939CBvbIcFH24Uyc1NfEAKIbvR87HrSouzUh2SEcDMTfy5lsj3TCs9VuAco77CFl80fiUjwPDvk7wQyfCRC/3rJvHe7GW2Q3iJ7AD5Nz0QAhUuqipuu0tzG+BHOpcpu+52aXsgV2yOh67mNTmPV2JajmkDe/LtWEt1cIn0RPg0FDRSIjjbATK9Ogg==",
+    "scriptSignature": "DrLy/2P+8A9pJE2Aa2/47nFG9Xvn6013oB60hDHA6/90PE4lj5NU0A9eMalextdGa+smJxX1PI/bPgVegxbJm+QSM8gXR5UAVpY7wM7ZLR7Tu96iRuI7pOdlAjk2gkGtH6m5K1qbJsKSQ/Y8v52NoqOm/XaHGeEn08YmOFvfhilOaevNOpcZW5xgcAb4Js+HPernLZg4Ptt4nWegCujJ3mBeAT4QB1iFVPw9AAtZURYSOizEFUAgKS5hwsU5vCKVqX/TxL6i37+cwiQ1EaRTvP99SSisUUTvgsHiXJXbiQX/Y/LJkeLMqKjFoeM03aWBWBJb0dZtfrvZpNvrd9PekQ==",
     "scriptPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs+UccK9soemMFApJPGXYwtQozig3T5tuAhqrCjQEi5e6x0LffkLbYqY6+XbmLQIju3jzl2D+x1IDIqfr0FCW6fyPoLqK5sRrdP2AZhUI8HxKdjE1B+VwWnSzpa/bdr298mpNC1pbVQckyDd8A2licwCuA587Mbmx5ILmU2oKn/+lKjjlx5PfbteJVa6ztwNaxpYJelU3d6Y0YDagCMFyHnjDSJlonaJfgFAzh1RYXXPB5wImNlyW+NKtAR09iCD2eG/s1spXi2fdic4mzR3AeXnDSBlDmNQOjQ4j0KYZqTEtmcLbpQr7p9hd7M604IjtmXLo9qenXYKkSP1ZL4d6BwIDAQAB",
     "packages": [
         "Http",
@@ -20,6 +20,23 @@
     "allowEval": false,
     "allowUrls": [
         "everywhere"
+    ],
+    "settings": [
+        {
+            "variable": "homeFeed",
+            "name": "Home Screen Feed",
+            "description": "Select what content to display on the Home screen.",
+            "type": "options",
+            "options": [
+                "Trending (Default)",
+                "Popular Movies",
+                "Popular TV Shows",
+                "Top Rated Movies",
+                "Top Rated TV Shows",
+                "Now Playing Movies"
+            ],
+            "default": "Trending (Default)"
+        }
     ],
     "authentication": {
         "userAgent": "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.230 Mobile Safari/537.36",

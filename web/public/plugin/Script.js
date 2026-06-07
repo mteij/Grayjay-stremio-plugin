@@ -97,7 +97,12 @@ function mapTvToPlaylist(tv) {
 }
 
 
-source.enable = function(config) {
+let _pluginSettings = {};
+
+source.enable = function(config, settings) {
+    if (settings) {
+        _pluginSettings = settings;
+    }
     try {
         fetchUserSettings();
     } catch(e) {
@@ -112,13 +117,29 @@ class TmdbHomePager extends VideoPager {
         super(data.items, data.hasMore, { page: page });
     }
     static fetch(page) {
-        const url = `https://api.themoviedb.org/3/trending/all/day?api_key=${_tmdbKey}&language=en-US&page=${page}`;
+        const feedType = _pluginSettings?.homeFeed || "Trending (Default)";
+        let endpoint = "trending/all/day";
+        if (feedType === "Popular Movies") endpoint = "movie/popular";
+        else if (feedType === "Popular TV Shows") endpoint = "tv/popular";
+        else if (feedType === "Top Rated Movies") endpoint = "movie/top_rated";
+        else if (feedType === "Top Rated TV Shows") endpoint = "tv/top_rated";
+        else if (feedType === "Now Playing Movies") endpoint = "movie/now_playing";
+
+        const url = `https://api.themoviedb.org/3/${endpoint}?api_key=${_tmdbKey}&language=en-US&page=${page}`;
         const response = http.GET(url, {});
         const body = JSON.parse(response.body);
-        const items = (body.results || []).filter(i => i.media_type === "movie" || i.media_type === "tv").map(i => {
-            if (i.media_type === "tv") return mapTvToPlaylist(i);
-            return mapMovieToVideo(i);
-        });
+        
+        const items = (body.results || []).map(i => {
+            let mediaType = i.media_type;
+            if (!mediaType) {
+                if (endpoint.startsWith("movie")) mediaType = "movie";
+                else if (endpoint.startsWith("tv")) mediaType = "tv";
+            }
+            if (mediaType === "tv") return mapTvToPlaylist(i);
+            if (mediaType === "movie") return mapMovieToVideo(i);
+            return null;
+        }).filter(Boolean);
+        
         return { items, hasMore: page < (body.total_pages || 1) };
     }
     nextPage() {

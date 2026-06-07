@@ -3,7 +3,7 @@ let _stremioAddons = [];
 let _tmdbKey = "";
 
 function fetchUserSettings() {
-    if (_settings) return _settings;
+    if (_settings && _tmdbKey) return _settings;
 
     if (!bridge.isLoggedIn()) {
         throw new ScriptException("No authentication found. Please log in.");
@@ -15,13 +15,16 @@ function fetchUserSettings() {
         throw new ScriptException("Failed to load settings. HTTP " + response.code);
     }
 
-    _settings = JSON.parse(response.body);
-    _tmdbKey = (_settings.tmdb_api_key || "").trim();
-    _stremioAddons = _settings.stremio_addons || [];
+    const tempSettings = JSON.parse(response.body);
+    const tempTmdbKey = (tempSettings.tmdb_api_key || "").trim();
 
-    if (!_tmdbKey) {
-        throw new ScriptException("TMDB API Key is missing. Please configure it in the Web App.");
+    if (!tempTmdbKey) {
+        throw new ScriptException("TMDB API Key is missing! You must paste your TMDB API Key into the Settings Dashboard on the Web App.");
     }
+
+    _settings = tempSettings;
+    _tmdbKey = tempTmdbKey;
+    _stremioAddons = _settings.stremio_addons || [];
 
     return _settings;
 }

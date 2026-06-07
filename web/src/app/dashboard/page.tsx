@@ -7,6 +7,7 @@ import QRCode from 'react-qr-code'
 import { Smartphone } from 'lucide-react'
 import StreamPreferencesConfig from '@/components/StreamPreferences'
 import DashboardTabs from '@/components/DashboardTabs'
+import CopyConfigUrlButton from '@/components/CopyConfigUrlButton'
 
 export default async function DashboardPage(props: { searchParams: Promise<{ message?: string }> }) {
   const searchParams = await props.searchParams
@@ -139,13 +140,16 @@ export default async function DashboardPage(props: { searchParams: Promise<{ mes
             </div>
           </div>
           
-          <a 
-            href={grayjayDeepLink}
-            className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 rounded-md bg-primary/10 border border-primary/20 text-primary px-6 py-3 text-sm font-medium transition hover:bg-primary hover:text-white"
-          >
-            <Smartphone className="w-4 h-4" />
-            Open in Grayjay
-          </a>
+          <div className="flex items-center gap-2">
+            <a 
+              href={grayjayDeepLink}
+              className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 rounded-md bg-primary/10 border border-primary/20 text-primary px-6 py-3 text-sm font-medium transition hover:bg-primary hover:text-white"
+            >
+              <Smartphone className="w-4 h-4" />
+              Open in Grayjay
+            </a>
+            <CopyConfigUrlButton url={pluginUrl} />
+          </div>
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { SubmitButton } from '@/components/SubmitButton'
 import QRCode from 'react-qr-code'
 import { Smartphone } from 'lucide-react'
 import StreamPreferencesConfig from '@/components/StreamPreferences'
+import DashboardTabs from '@/components/DashboardTabs'
 
 export default async function DashboardPage(props: { searchParams: Promise<{ message?: string }> }) {
   const searchParams = await props.searchParams
@@ -84,37 +85,40 @@ export default async function DashboardPage(props: { searchParams: Promise<{ mes
               {message}
             </div>
           )}
-          <form className="space-y-6">
-            
-            <div className="mb-6">
-              <label htmlFor="tmdb_api_key" className="mb-[10px] block text-base font-medium text-white">
-                TMDB API Key
-              </label>
-              <input
-                id="tmdb_api_key"
-                name="tmdb_api_key"
-                type="text"
-                defaultValue={tmdbKey}
-                className="w-full rounded-md border border-dark-3 bg-transparent px-5 py-3 text-base text-body-color outline-none transition focus:border-primary focus-visible:shadow-none dark:text-white"
-                placeholder="e.g. 1a2b3c4d5e6f7g8h9i0j..."
-              />
-              <p className="mt-2 text-sm text-body-color">Used to fetch high quality metadata and posters for the unified library.</p>
-            </div>
-
-            <div className="mb-8">
-              <AddonList initialAddons={hydratedAddons} />
-            </div>
-
-            <StreamPreferencesConfig initialPrefs={settings?.stream_preferences || {}} />
-
-            <div className="flex justify-end pt-4 border-t border-dark-3 mt-8">
-              <SubmitButton
-                formAction={saveSettings}
-                className="w-full sm:w-auto cursor-pointer rounded-md border border-primary bg-primary px-8 py-3 text-base font-medium text-white transition hover:bg-opacity-90"
-              >
-                Save & Sync to Grayjay
-              </SubmitButton>
-            </div>
+          <form action={saveSettings} className="space-y-0">
+            <DashboardTabs
+              generalContent={
+                <div className="space-y-6">
+                  <div className="mb-6">
+                    <label htmlFor="tmdb_api_key" className="mb-[10px] block text-base font-medium text-white">
+                      TMDB API Key
+                    </label>
+                    <input
+                      id="tmdb_api_key"
+                      name="tmdb_api_key"
+                      type="text"
+                      defaultValue={tmdbKey}
+                      className="w-full rounded-md border border-dark-3 bg-transparent px-5 py-3 text-base text-body-color outline-none transition focus:border-primary focus-visible:shadow-none dark:text-white"
+                      placeholder="e.g. 1a2b3c4d5e6f7g8h9i0j..."
+                    />
+                    <p className="mt-2 text-sm text-body-color">Used to fetch high quality metadata and posters for the unified library.</p>
+                  </div>
+                  <div className="mb-8">
+                    <AddonList initialAddons={hydratedAddons} />
+                  </div>
+                </div>
+              }
+              preferencesContent={
+                <StreamPreferencesConfig initialPrefs={settings?.stream_preferences || {}} />
+              }
+              submitContent={
+                <SubmitButton
+                  className="w-full sm:w-auto cursor-pointer rounded-md border border-primary bg-primary px-8 py-3 text-base font-medium text-white transition hover:bg-opacity-90"
+                >
+                  Save & Sync to Grayjay
+                </SubmitButton>
+              }
+            />
           </form>
         </div>
 

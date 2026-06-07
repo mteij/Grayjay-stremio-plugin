@@ -9,7 +9,7 @@ export interface StreamPreferences {
 }
 
 export const DEFAULT_PREFERENCES: StreamPreferences = {
-  resolutionOrder: ['4K', '1080P', '720P', '480P', '360P', '?'],
+  resolutionOrder: ['1080P', '720P', '4K', '480P', '360P', '?'],
   codecOrder: ['HEVC', 'AV1', 'AVC'],
   qualityOrder: ['Bluray REMUX', 'Bluray', 'WEB-DL', 'WEBRip', 'HDRip', 'HC HD-Rip', 'DVDRip', 'HDTV', 'CAM', 'TS', 'TC', 'SCR'],
   hdrPreference: 'any',

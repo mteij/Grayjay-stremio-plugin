@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createClient()
   const cookieStore = await cookies()
-  const apiToken = cookieStore.get('grayjay-api-token')?.value
+  const headersList = await headers()
+  
+  const cookieToken = cookieStore.get('grayjay-api-token')?.value
+  const headerToken = headersList.get('grayjay-api-token')
+  const authHeader = headersList.get('authorization')
+  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null
+  
+  const apiToken = cookieToken || headerToken || bearerToken
 
   let userResponse = apiToken 
     ? await supabase.auth.getUser(apiToken)

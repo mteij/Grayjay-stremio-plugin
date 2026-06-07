@@ -21,7 +21,14 @@ export async function GET(request: Request) {
   const { data: { user }, error: authError } = userResponse
 
   if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized' }, { 
+      status: 401,
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
+    })
   }
 
   const { data: settings, error: settingsError } = await supabase
@@ -41,11 +48,23 @@ export async function GET(request: Request) {
       stream_preferences: null,
       integrations: null,
       trakt_client_id: process.env.NEXT_PUBLIC_TRAKT_CLIENT_ID || ""
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
     })
   }
 
   return NextResponse.json({
     ...settings,
     trakt_client_id: process.env.NEXT_PUBLIC_TRAKT_CLIENT_ID || ""
+  }, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    }
   })
 }

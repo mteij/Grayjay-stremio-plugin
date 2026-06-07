@@ -133,6 +133,7 @@ export async function continueToDashboard() {
 
   if (session) {
     const cookieStore = await cookies()
+    cookieStore.set('grayjay-api-token', session.access_token, {
       secure: true,
       sameSite: 'lax',
       path: '/',

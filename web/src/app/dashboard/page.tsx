@@ -6,8 +6,9 @@ import { SubmitButton } from '@/components/SubmitButton'
 import QRCode from 'react-qr-code'
 import { Smartphone } from 'lucide-react'
 import StreamPreferencesConfig from '@/components/StreamPreferences'
-import DashboardTabs from '@/components/DashboardTabs'
+import { DashboardForm } from '@/components/DashboardForm'
 import CopyConfigUrlButton from '@/components/CopyConfigUrlButton'
+import { buttonVariants } from '@/components/ui/button'
 
 export default async function DashboardPage(props: { searchParams: Promise<{ message?: string }> }) {
   const searchParams = await props.searchParams
@@ -29,6 +30,7 @@ export default async function DashboardPage(props: { searchParams: Promise<{ mes
 
   const tmdbKey = settings?.tmdb_api_key || ''
   const addonUrls = (settings?.stremio_addons as string[]) || []
+  const integrations = settings?.integrations || { rpdb_key: 't0-free-rpdb-rounded-blocks' }
 
   // Pre-fetch manifests on the server to hydrate the UI instantly
   const hydratedAddons: Addon[] = await Promise.all(
@@ -60,73 +62,40 @@ export default async function DashboardPage(props: { searchParams: Promise<{ mes
   const grayjayDeepLink = `grayjay://plugin/${pluginUrl}`
 
   return (
-    <div className="min-h-screen bg-dark p-6 md:p-12 font-sans text-white">
+    <div className="min-h-screen bg-background text-foreground p-6 md:p-12 font-sans">
       <div className="mx-auto w-full max-w-[800px]">
-        <header className="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <header className="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-up">
           <div>
-            <h1 className="text-3xl font-bold text-white sm:text-4xl">
-              Addon Manager
+            <h1 className="text-3xl font-bold sm:text-4xl">
+              Plugin Configuration
             </h1>
-            <p className="mt-2 text-base text-body-color">
-              Configure your Grayjay Stremio plugin settings
+            <p className="mt-2 text-base text-muted-foreground">
+              Manage your Grayjay Stremio plugin settings
             </p>
           </div>
-          <form action={signout}>
+          <form action={signout} className="flex items-center">
             <SubmitButton
-              className="inline-block cursor-pointer rounded-md border border-dark-3 bg-transparent px-6 py-2 text-sm font-medium text-body-color transition hover:border-red-500 hover:bg-red-500 hover:text-white"
+              variant="destructive"
+              className="w-full sm:w-auto h-10 flex items-center justify-center px-4"
             >
               Sign out
             </SubmitButton>
           </form>
         </header>
 
-        <div className="bg-dark-2 rounded-xl border border-dark-3 p-8 sm:p-11 shadow-card">
-          {message && (
-            <div className="mb-8 rounded-md border border-primary/50 bg-primary/10 px-5 py-4 text-sm font-medium text-primary">
-              {message}
-            </div>
-          )}
-          <form action={saveSettings} className="space-y-0">
-            <DashboardTabs
-              generalContent={
-                <div className="space-y-6">
-                  <div className="mb-6">
-                    <label htmlFor="tmdb_api_key" className="mb-[10px] block text-base font-medium text-white">
-                      TMDB API Key
-                    </label>
-                    <input
-                      id="tmdb_api_key"
-                      name="tmdb_api_key"
-                      type="text"
-                      defaultValue={tmdbKey}
-                      className="w-full rounded-md border border-dark-3 bg-transparent px-5 py-3 text-base text-body-color outline-none transition focus:border-primary focus-visible:shadow-none dark:text-white"
-                      placeholder="e.g. 1a2b3c4d5e6f7g8h9i0j..."
-                    />
-                    <p className="mt-2 text-sm text-body-color">Used to fetch high quality metadata and posters for the unified library.</p>
-                  </div>
-                  <div className="mb-8">
-                    <AddonList initialAddons={hydratedAddons} />
-                  </div>
-                </div>
-              }
-              preferencesContent={
-                <StreamPreferencesConfig initialPrefs={settings?.stream_preferences || {}} />
-              }
-              submitContent={
-                <SubmitButton
-                  className="w-full sm:w-auto cursor-pointer rounded-md border border-primary bg-primary px-8 py-3 text-base font-medium text-white transition hover:bg-opacity-90"
-                >
-                  Save & Sync to Grayjay
-                </SubmitButton>
-              }
-            />
-          </form>
+        <div className="space-y-6">
+          <DashboardForm 
+            initialTmdbKey={tmdbKey}
+            initialAddons={hydratedAddons}
+            initialPrefs={settings?.stream_preferences || {}}
+            initialIntegrations={integrations || { rpdb_key: 't0-free-rpdb-rounded-blocks' }}
+          />
         </div>
 
         {/* Installation Card - Compact */}
-        <div className="mt-8 pt-8 border-t border-dark-3 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="mt-8 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-6 animate-fade-up delay-200">
           <div className="flex items-center gap-4">
-            <div className="bg-white p-2 rounded-lg shadow-sm shrink-0">
+            <div className="bg-white p-2 rounded-lg shadow-sm shrink-0 dark:border dark:border-border dark:shadow-none">
               <QRCode 
                 value={grayjayDeepLink} 
                 size={64}
@@ -135,15 +104,15 @@ export default async function DashboardPage(props: { searchParams: Promise<{ mes
               />
             </div>
             <div className="text-left">
-              <h2 className="text-lg font-bold text-white mb-1">Install Plugin</h2>
-              <p className="text-sm text-dark-6">Scan QR or open directly in Grayjay.</p>
+              <h2 className="text-lg font-bold mb-1">Install Plugin</h2>
+              <p className="text-sm text-muted-foreground">Scan QR or open directly in Grayjay.</p>
             </div>
           </div>
           
           <div className="flex items-center gap-2">
             <a 
               href={grayjayDeepLink}
-              className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 rounded-md bg-primary/10 border border-primary/20 text-primary px-6 py-3 text-sm font-medium transition hover:bg-primary hover:text-white"
+              className={buttonVariants({ className: "w-full sm:w-auto shrink-0 gap-2 h-10 px-4" })}
             >
               <Smartphone className="w-4 h-4" />
               Open in Grayjay

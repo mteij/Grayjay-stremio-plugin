@@ -5,6 +5,7 @@ CREATE TABLE user_settings (
   tmdb_api_key TEXT,
   stremio_addons JSONB DEFAULT '[]'::jsonb,
   stream_preferences JSONB DEFAULT '{}'::jsonb,
+  integrations JSONB DEFAULT '{}'::jsonb,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 

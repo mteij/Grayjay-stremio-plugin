@@ -3,14 +3,15 @@
 import { useFormStatus } from 'react-dom'
 import { Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { buttonVariants } from '@/components/ui/button'
+import { type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/utils'
 
-interface SubmitButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface SubmitButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   formAction?: string | ((formData: FormData) => void | Promise<void>)
-  children: React.ReactNode
-  className?: string
 }
 
-export function SubmitButton({ formAction, children, className = '', ...props }: SubmitButtonProps) {
+export function SubmitButton({ formAction, children, className, disabled, onClick, variant, size, ...props }: SubmitButtonProps) {
   const { pending } = useFormStatus()
   const [clicked, setClicked] = useState(false)
 
@@ -23,16 +24,16 @@ export function SubmitButton({ formAction, children, className = '', ...props }:
 
   return (
     <button
-      formAction={formAction}
+      formAction={formAction as any}
       onClick={(e) => {
         setClicked(true)
-        if (props.onClick) props.onClick(e)
+        if (onClick) onClick(e)
       }}
-      disabled={pending || props.disabled}
-      className={`flex items-center justify-center gap-2 ${className} ${(pending || props.disabled) ? 'opacity-50 cursor-not-allowed' : ''}`}
+      disabled={pending || disabled}
+      className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     >
-      {pending && clicked && <Loader2 className="w-5 h-5 animate-spin" />}
+      {pending && clicked && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
       {children}
     </button>
   )

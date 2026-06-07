@@ -11,10 +11,21 @@ function fetchUserSettings() {
     }
 
     let cookieString = "";
-    if (typeof auth === 'object') {
-        cookieString = Object.keys(auth).map(k => `${k}=${auth[k]}`).join("; ");
+    let authObj = auth;
+    
+    // Grayjay mobile sometimes returns auth as a JSON string instead of an object
+    if (typeof auth === 'string') {
+        try {
+            authObj = JSON.parse(auth);
+        } catch(e) {
+            authObj = auth;
+        }
+    }
+
+    if (typeof authObj === 'object' && authObj !== null) {
+        cookieString = Object.keys(authObj).map(k => `${k}=${authObj[k]}`).join("; ");
     } else {
-        cookieString = auth;
+        cookieString = authObj;
     }
 
     const response = http.GET("https://greyjay-stremio.netlify.app/api/settings", {
@@ -36,11 +47,19 @@ function fetchUserSettings() {
     return _settings;
 }
 
+function getPosterUrl(tmdbId, tmdbPosterPath, tmdbBackdropPath) {
+    const rpdbKey = _settings?.integrations?.rpdb_key;
+    if (rpdbKey && rpdbKey.trim() !== '') {
+        return `https://api.ratingposterdb.com/${rpdbKey}/tmdb/backdrop-default/movie-${tmdbId}.jpg`;
+    }
+    return "https://image.tmdb.org/t/p/w500" + (tmdbBackdropPath || tmdbPosterPath);
+}
+
 function mapMovieToVideo(movie) {
     return new PlatformVideo({
         id: new PlatformID("TMDB", movie.id.toString(), plugin.config.id),
         name: movie.title,
-        thumbnails: new Thumbnails([new Thumbnail("https://image.tmdb.org/t/p/w500" + movie.poster_path, 0)]),
+        thumbnails: new Thumbnails([new Thumbnail(getPosterUrl(movie.id, movie.poster_path, movie.backdrop_path), 0)]),
         author: new PlatformAuthorLink(new PlatformID("TMDB", "TMDB", plugin.config.id), "TMDB", "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
         datetime: Math.floor(new Date(movie.release_date).getTime() / 1000),
         url: "https://www.themoviedb.org/movie/" + movie.id
@@ -134,14 +153,107 @@ source.getContentDetails = function(url) {
         }
     }
 
+    // Sort sources to prefer AAC and WEBRip to avoid audio codec limitations
+    sources.sort((a, b) => {
+        const aName = a.name.toLowerCase();
+        const bName = b.name.toLowerCase();
+        
+        const aScore = (aName.includes("aac") ? 2 : 0) + (aName.includes("webrip") || aName.includes("web-dl") ? 1 : 0);
+        const bScore = (bName.includes("aac") ? 2 : 0) + (bName.includes("webrip") || bName.includes("web-dl") ? 1 : 0);
+        
+        return bScore - aScore;
+    });
+
     return new PlatformVideoDetails({
         id: new PlatformID("TMDB", tmdbId, plugin.config.id),
         name: movieData.title,
-        thumbnails: new Thumbnails([new Thumbnail("https://image.tmdb.org/t/p/w500" + movieData.poster_path, 0)]),
+        thumbnails: new Thumbnails([new Thumbnail(getPosterUrl(tmdbId, movieData.poster_path, movieData.backdrop_path), 0)]),
         author: new PlatformAuthorLink(new PlatformID("TMDB", "TMDB", plugin.config.id), "TMDB", "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
         datetime: Math.floor(new Date(movieData.release_date).getTime() / 1000),
         url: url,
         description: movieData.overview,
         video: new VideoSourceDescriptor(sources)
     });
+};
+
+source.getPlaybackTracker = function(url) {
+    try {
+        fetchUserSettings();
+    } catch(e) {
+        return null;
+    }
+
+    const traktToken = _settings.integrations?.trakt?.access_token;
+    if (!traktToken) return null; // Trakt not connected
+
+    // Extract TMDB ID from url
+    const tmdbMatch = url.match(/\/movie\/(\d+)/);
+    const tmdbId = tmdbMatch ? tmdbMatch[1] : null;
+    
+    if (!tmdbId) return null;
+
+    // We pass trakt_client_id from our settings API endpoint now!
+    const traktClientId = _settings.trakt_client_id;
+    if (!traktClientId) return null;
+
+    const payloadObj = {
+        movie: { ids: { tmdb: parseInt(tmdbId) } },
+        app_version: "1.0",
+        app_date: "2024-01-01"
+    };
+
+    const headers = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${traktToken}`,
+        "trakt-api-version": "2",
+        "trakt-api-key": traktClientId
+    };
+
+    return {
+        getEventTracker: function() {
+            return {
+                onEvent: function(event) {
+                    // event object properties may vary depending on platform (could have type, progress, duration, positionMs)
+                    // Common Grayjay tracker pattern for Playback events:
+                    // Because we are relying on a generic implementation, we use positionMs / durationMs if available.
+                    
+                    const positionMs = event.positionMs || event.position || 0;
+                    const durationMs = event.durationMs || event.duration || 1; // avoid division by zero
+                    const progress = Math.min((positionMs / durationMs) * 100, 100);
+
+                    const progressPayload = JSON.stringify({
+                        ...payloadObj,
+                        progress: progress
+                    });
+
+                    // type 1: Play, 2: Pause, 3: Stop? Or sometimes they pass event.type
+                    // Since it's a generic tracker, let's catch standard methods if called directly,
+                    // or handle generic `onEvent`
+                    // However, standard Grayjay API defines onPlay, onProgress, onStop directly on the tracker.
+                }
+            };
+        },
+        onPlay: function() {
+            http.POST("https://api.trakt.tv/scrobble/start", JSON.stringify({ ...payloadObj, progress: 0 }), headers);
+        },
+        onProgress: function(positionMs, durationMs) {
+            // Trakt requires progress as a percentage (0 to 100)
+            const dur = durationMs || 1;
+            const progress = Math.min((positionMs / dur) * 100, 100);
+            
+            http.POST("https://api.trakt.tv/scrobble/pause", JSON.stringify({ ...payloadObj, progress }), headers);
+        },
+        onStop: function(positionMs, durationMs) {
+            const dur = durationMs || 1;
+            const progress = Math.min((positionMs / dur) * 100, 100);
+            
+            if (progress > 80) {
+                // Scrobble stop (mark as watched) if more than 80%
+                http.POST("https://api.trakt.tv/scrobble/stop", JSON.stringify({ ...payloadObj, progress }), headers);
+            } else {
+                // Otherwise just pause so progress is saved
+                http.POST("https://api.trakt.tv/scrobble/pause", JSON.stringify({ ...payloadObj, progress }), headers);
+            }
+        }
+    };
 };

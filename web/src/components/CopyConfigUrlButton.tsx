@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Copy, Check } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   url: string
@@ -21,13 +22,15 @@ export default function CopyConfigUrlButton({ url }: Props) {
   }
 
   return (
-    <button
+    <Button
+      variant="outline"
+      size="icon"
       type="button"
       onClick={handleCopy}
       title="Copy plugin URL"
-      className="p-2 text-dark-6 hover:text-white hover:bg-dark-3 rounded-md transition"
+      className="h-10 w-10 shrink-0"
     >
-      {copied ? <Check className="w-5 h-5 text-primary" /> : <Copy className="w-5 h-5" />}
-    </button>
+      {copied ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
+    </Button>
   )
 }

@@ -38,9 +38,14 @@ export async function GET(request: Request) {
     return NextResponse.json({
       tmdb_api_key: "",
       stremio_addons: [],
-      stream_preferences: null
+      stream_preferences: null,
+      integrations: null,
+      trakt_client_id: process.env.NEXT_PUBLIC_TRAKT_CLIENT_ID || ""
     })
   }
 
-  return NextResponse.json(settings)
+  return NextResponse.json({
+    ...settings,
+    trakt_client_id: process.env.NEXT_PUBLIC_TRAKT_CLIENT_ID || ""
+  })
 }

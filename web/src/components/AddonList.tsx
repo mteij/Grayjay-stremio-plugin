@@ -1,8 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ArrowUp, ArrowDown, Trash2, Plus, Loader2, Link as LinkIcon } from 'lucide-react'
-
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 export interface Addon {
   url: string
   name: string
@@ -11,11 +25,16 @@ export interface Addon {
   version: string
 }
 
-export default function AddonList({ initialAddons }: { initialAddons: Addon[] }) {
+export default function AddonList({ initialAddons, onChange }: { initialAddons: Addon[], onChange?: (addons: Addon[]) => void }) {
   const [addons, setAddons] = useState<Addon[]>(initialAddons)
   const [newUrl, setNewUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Report state changes to parent form tracker
+  useEffect(() => {
+    if (onChange) onChange(addons)
+  }, [addons, onChange])
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -87,103 +106,121 @@ export default function AddonList({ initialAddons }: { initialAddons: Addon[] })
       <input type="hidden" name="stremio_addons" value={JSON.stringify(addonUrls)} />
 
       {/* Add New Addon Form */}
-      <div>
-        <label className="mb-[10px] block text-base font-medium text-white">
-          Add Stremio Addon
-        </label>
+      <div className="space-y-3">
+        <Label className="text-base font-medium">Add Stremio Addon</Label>
         <div className="flex flex-col sm:flex-row gap-3">
-          <input
+          <Input
             type="text"
             value={newUrl}
             onChange={(e) => { setNewUrl(e.target.value); setError(''); }}
             placeholder="https://torrentio.strem.fun/manifest.json"
-            className="w-full rounded-md border border-dark-3 bg-transparent px-5 py-3 text-base text-white outline-hidden focus:border-primary focus-visible:shadow-none transition"
+            className="flex-grow"
             onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault()
-                    handleAdd(e)
+                    handleAdd(e as any)
                 }
             }}
           />
-          <button
+          <Button
             type="button"
-            onClick={handleAdd}
+            onClick={handleAdd as any}
             disabled={loading || !newUrl}
-            className="flex items-center justify-center gap-2 rounded-md border border-primary bg-primary px-6 py-3 text-base font-medium text-white transition hover:bg-opacity-90 disabled:opacity-50 shrink-0"
+            className="shrink-0"
           >
-            {loading ? <Loader2 className="animate-spin w-5 h-5" /> : <Plus className="w-5 h-5" />}
+            {loading ? <Loader2 className="mr-2 animate-spin w-5 h-5" /> : <Plus className="mr-2 w-5 h-5" />}
             Add
-          </button>
+          </Button>
         </div>
-        {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-destructive font-medium">{error}</p>}
       </div>
 
       {/* Addon List */}
-      <div className="space-y-3">
+      <div className="flex flex-col gap-3">
         {addons.length === 0 ? (
-          <div className="rounded-lg border border-dark-3 border-dashed p-8 text-center">
-            <LinkIcon className="mx-auto h-8 w-8 text-dark-5 mb-3" />
-            <p className="text-body-color">No addons added yet.</p>
-            <p className="text-sm text-dark-6 mt-1">Paste a Stremio manifest URL above to get started.</p>
+          <div className="rounded-lg border border-dashed border-border p-8 text-center bg-muted/50">
+            <LinkIcon className="mx-auto h-8 w-8 text-muted-foreground mb-3" />
+            <p className="text-foreground font-medium">No addons added yet.</p>
+            <p className="text-sm text-muted-foreground mt-1">Paste a Stremio manifest URL above to get started.</p>
           </div>
         ) : (
           addons.map((addon, index) => (
-            <div 
-              key={addon.url} 
-              className="group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg border border-dark-3 bg-dark p-4 transition hover:border-primary/50"
-            >
-              <div className="flex items-center gap-4 flex-grow min-w-0">
-                <div className="h-12 w-12 shrink-0 rounded-md bg-dark-3 flex items-center justify-center overflow-hidden border border-dark-3">
+            <Card key={addon.url} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3 shadow-sm transition-shadow hover:shadow-md overflow-hidden">
+              <div className="flex items-center gap-3 flex-grow min-w-0">
+                <div className="h-10 w-10 shrink-0 rounded-md bg-zinc-900 dark:bg-muted flex items-center justify-center overflow-hidden border border-zinc-800 dark:border-border">
                   {addon.logo ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img src={addon.logo} alt={addon.name} className="h-full w-full object-contain p-1" />
                   ) : (
-                    <span className="text-xl font-bold text-dark-6">{addon.name.charAt(0)}</span>
+                    <span className="text-lg font-bold text-muted-foreground">{addon.name.charAt(0)}</span>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="truncate text-lg font-medium text-white" title={addon.name}>{addon.name}</h3>
-                    <span className="shrink-0 rounded-full bg-dark-3 px-2 py-0.5 text-xs font-medium text-body-color">v{addon.version}</span>
+                    <h3 className="truncate text-sm font-semibold text-foreground" title={addon.name}>{addon.name}</h3>
+                    <span className="shrink-0 text-[10px] font-medium text-muted-foreground">v{addon.version}</span>
                   </div>
-                  <p className="truncate text-sm text-body-color" title={addon.description}>
-                    {addon.description}
+                  <p className="truncate text-xs text-muted-foreground mt-0.5" title={addon.description}>
+                    {addon.description || "No description provided."}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 self-end sm:self-auto shrink-0 border-t border-dark-3 sm:border-0 pt-3 sm:pt-0 w-full sm:w-auto justify-end">
-                <div className="flex flex-row sm:flex-col gap-1 mr-2">
-                  <button
-                    type="button"
-                    onClick={() => moveUp(index)}
-                    disabled={index === 0}
-                    className="p-1.5 rounded-md text-body-color hover:bg-dark-3 hover:text-white transition disabled:opacity-30 disabled:hover:bg-transparent"
-                    title="Move Up"
-                  >
-                    <ArrowUp className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveDown(index)}
-                    disabled={index === addons.length - 1}
-                    className="p-1.5 rounded-md text-body-color hover:bg-dark-3 hover:text-white transition disabled:opacity-30 disabled:hover:bg-transparent"
-                    title="Move Down"
-                  >
-                    <ArrowDown className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                <button
+              <div className="flex items-center gap-1 self-end sm:self-auto shrink-0 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0 mt-2 sm:mt-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
                   type="button"
-                  onClick={() => removeAddon(index)}
-                  className="p-2 rounded-md text-red-500 hover:bg-red-500/10 transition border border-transparent hover:border-red-500/20"
-                  title="Remove Addon"
+                  onClick={() => moveUp(index)}
+                  disabled={index === 0}
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  title="Move Up"
                 >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                  <ArrowUp className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  type="button"
+                  onClick={() => moveDown(index)}
+                  disabled={index === addons.length - 1}
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  title="Move Down"
+                >
+                  <ArrowDown className="w-4 h-4" />
+                </Button>
+                <div className="w-px h-6 bg-border mx-1 hidden sm:block"></div>
+                <AlertDialog>
+                  <AlertDialogTrigger 
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        type="button"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        title="Remove Addon"
+                      />
+                    }
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Remove Addon</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to remove {addon.name}?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => removeAddon(index)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Remove
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
-            </div>
+            </Card>
           ))
         )}
       </div>

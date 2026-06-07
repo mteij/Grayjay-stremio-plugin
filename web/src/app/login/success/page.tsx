@@ -1,32 +1,28 @@
-'use client'
+import Link from 'next/link'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CheckCircle2 } from 'lucide-react'
+import { buttonVariants } from "@/components/ui/button"
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-
-export default function LoginSuccessPage() {
-  const router = useRouter()
-
-  useEffect(() => {
-    // Redirect back to the dashboard after a tiny delay.
-    // This allows Grayjay to intercept the URL and close the popup on mobile,
-    // while Desktop users will be seamlessly redirected back to continue editing!
-    const timeout = setTimeout(() => {
-      window.location.href = '/dashboard'
-    }, 500)
-
-    return () => clearTimeout(timeout)
-  }, [router])
-
+export default function MagicLinkSuccess() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark p-4 font-sans text-white">
-      <div className="w-full max-w-[500px] rounded-lg bg-dark-2 px-8 py-10 sm:px-10 sm:py-12 shadow-2 dark:bg-dark-2 text-center">
-        <h2 className="mb-2 text-2xl font-bold text-white sm:text-[28px]">
-          Syncing...
-        </h2>
-        <p className="text-base text-body-color dark:text-dark-6">
-          Transferring settings to Grayjay. You will be redirected shortly.
-        </p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 font-sans">
+      <Card className="w-full max-w-[500px] shadow-lg border-border text-center">
+        <CardHeader className="pb-4 pt-8 items-center flex flex-col">
+          <CheckCircle2 className="w-16 h-16 text-primary mb-4" />
+          <CardTitle className="text-2xl font-bold tracking-tight">
+            Check your email
+          </CardTitle>
+          <CardDescription className="text-base mt-2 max-w-[300px] mx-auto">
+            We've sent a magic link to your email address. Click the link to securely sign in.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="pt-4 pb-8">
+          <Link href="/login" className={buttonVariants({ variant: "outline", className: "w-full h-12 text-base font-medium" })}>
+            Back to Sign in
+          </Link>
+        </CardContent>
+      </Card>
     </div>
   )
 }

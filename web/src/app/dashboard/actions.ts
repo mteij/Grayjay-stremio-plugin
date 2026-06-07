@@ -1,7 +1,6 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
 export async function saveSettings(formData: FormData) {
@@ -15,6 +14,7 @@ export async function saveSettings(formData: FormData) {
   const tmdbApiKey = formData.get('tmdb_api_key') as string
   const stremioAddonsRaw = formData.get('stremio_addons') as string
   const streamPreferencesRaw = formData.get('stream_preferences') as string
+  const integrationsRaw = formData.get('integrations') as string
   
   let stremioAddons = []
   try {
@@ -37,6 +37,15 @@ export async function saveSettings(formData: FormData) {
     console.error('Failed to parse stream preferences', e)
   }
 
+  let integrations = {}
+  try {
+    if (integrationsRaw) {
+      integrations = JSON.parse(integrationsRaw)
+    }
+  } catch (e) {
+    console.error('Failed to parse integrations', e)
+  }
+
   // Upsert settings
   const { error } = await supabase
     .from('user_settings')
@@ -44,15 +53,16 @@ export async function saveSettings(formData: FormData) {
       id: user.id,
       tmdb_api_key: tmdbApiKey,
       stremio_addons: stremioAddons,
-      stream_preferences: streamPreferences
+      stream_preferences: streamPreferences,
+      integrations: integrations
     })
 
   if (error) {
     console.error('Error saving settings', error)
-    throw new Error('Failed to save settings')
+    return { success: false, message: 'Failed to save settings. Please try again.' }
   }
 
-  redirect('/login/success')
+  return { success: true, message: 'Settings successfully saved!' }
 }
 
 export async function signout() {

@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import { toast } from 'sonner'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
-export function UrlToastListener() {
+function ToastLogic() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -30,4 +30,12 @@ export function UrlToastListener() {
   }, [searchParams, pathname, router])
 
   return null
+}
+
+export function UrlToastListener() {
+  return (
+    <Suspense fallback={null}>
+      <ToastLogic />
+    </Suspense>
+  )
 }

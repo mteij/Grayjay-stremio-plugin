@@ -14,36 +14,7 @@ export default async function LoginPage(props: { searchParams: Promise<{ error?:
   const { data: { user } } = await supabase.auth.getUser()
 
   if (user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4 font-sans relative">
-        <div className="absolute top-6 left-6 sm:top-10 sm:left-10 animate-fade-up">
-          <Link href="/" className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to home
-          </Link>
-        </div>
-
-        <div className="w-full max-w-[400px] animate-fade-up">
-          <Card className="w-full shadow-lg border-border">
-            <CardHeader className="text-center pb-6 pt-6">
-              <CardTitle className="text-2xl font-bold tracking-tight">
-                Welcome Back
-              </CardTitle>
-              <CardDescription className="text-base mt-2">
-                You are currently signed in as <span className="font-medium text-foreground block mt-1 truncate">{user.email}</span>
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col space-y-4">
-                <a href="/dashboard" className="flex items-center justify-center w-full h-12 text-base font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors">
-                  Continue to Dashboard
-                </a>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
+    redirect('/dashboard')
   }
 
   const searchParams = await props.searchParams

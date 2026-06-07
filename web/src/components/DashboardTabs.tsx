@@ -17,7 +17,7 @@ export default function DashboardTabs({ generalContent, preferencesContent, subm
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
           <button
             type="button"
-            onClick={() => setActiveTab('general')}
+            onClick={(e) => { e.preventDefault(); setActiveTab('general'); }}
             className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base transition-colors ${
               activeTab === 'general'
                 ? 'border-primary text-primary'
@@ -28,7 +28,7 @@ export default function DashboardTabs({ generalContent, preferencesContent, subm
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('preferences')}
+            onClick={(e) => { e.preventDefault(); setActiveTab('preferences'); }}
             className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base transition-colors ${
               activeTab === 'preferences'
                 ? 'border-primary text-primary'

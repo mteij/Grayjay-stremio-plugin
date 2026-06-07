@@ -118,7 +118,7 @@ class TmdbHomePager extends VideoPager {
     }
     static fetch(page) {
         const category = _pluginSettings?.homeFeedCategory || "Trending";
-        const mediaType = _pluginSettings?.homeFeedType || "Mix";
+        const mediaType = _pluginSettings?.homeFeedType || "Both";
         
         let movieEndpoint = "";
         let tvEndpoint = "";
@@ -126,7 +126,7 @@ class TmdbHomePager extends VideoPager {
         if (category === "Trending") {
             movieEndpoint = "trending/movie/day";
             tvEndpoint = "trending/tv/day";
-            if (mediaType === "Mix") {
+            if (mediaType === "Both") {
                 movieEndpoint = "trending/all/day";
                 tvEndpoint = "";
             }
@@ -171,7 +171,7 @@ class TmdbHomePager extends VideoPager {
             items = res.results;
             hasMore = res.hasMore;
         } else {
-            // Mix
+            // Both
             if (category === "Trending") {
                 const res = fetchEndpoint(movieEndpoint, null);
                 items = res.results;

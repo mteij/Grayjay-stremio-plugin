@@ -25,28 +25,26 @@ export default function StreamPreferencesConfig({ initialPrefs }: Props) {
     <div className="mb-6">
       <label className="mb-2 block text-base font-medium text-white">{title}</label>
       <p className="mb-3 text-sm text-body-color">{description}</p>
-      <div className="space-y-2">
+      <div className="flex flex-wrap gap-2 p-3 bg-dark-3 rounded-lg border border-dark-4">
         {(prefs[listName] as string[]).map((item, index) => (
-          <div key={item} className="flex items-center justify-between rounded bg-dark-3 px-4 py-2 border border-dark-4">
-            <span className="text-white text-sm font-medium">{item}</span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => moveItem(listName, index, 'up')}
-                disabled={index === 0}
-                className="text-body-color hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronUp className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => moveItem(listName, index, 'down')}
-                disabled={index === (prefs[listName] as string[]).length - 1}
-                className="text-body-color hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronDown className="w-4 h-4" />
-              </button>
-            </div>
+          <div key={item} className="flex items-center bg-dark-2 rounded border border-dark-4 text-sm font-medium overflow-hidden">
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); moveItem(listName, index, 'up'); }}
+              disabled={index === 0}
+              className="px-1.5 py-1 text-body-color hover:bg-primary/20 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              &lt;
+            </button>
+            <span className="px-2 text-white">{item}</span>
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); moveItem(listName, index, 'down'); }}
+              disabled={index === (prefs[listName] as string[]).length - 1}
+              className="px-1.5 py-1 text-body-color hover:bg-primary/20 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              &gt;
+            </button>
           </div>
         ))}
       </div>

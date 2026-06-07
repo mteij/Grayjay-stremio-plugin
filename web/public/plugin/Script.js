@@ -117,8 +117,10 @@ class TmdbHomePager extends VideoPager {
         super(data.items, data.hasMore, { page: page });
     }
     static fetch(page) {
-        const category = _pluginSettings?.homeFeedCategory || "Trending";
-        const mediaType = _pluginSettings?.homeFeedType || "Both";
+        const categoryMap = { 1: "Trending", 2: "Popular", 3: "Top Rated", 4: "Now Playing" };
+        const typeMap = { 1: "Both", 2: "Movies", 3: "Series" };
+        const category = categoryMap[_pluginSettings?.homeFeedCategory || 1] || "Trending";
+        const mediaType = typeMap[_pluginSettings?.homeFeedType || 1] || "Both";
         
         let movieEndpoint = "";
         let tvEndpoint = "";

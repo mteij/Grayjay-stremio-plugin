@@ -6,11 +6,11 @@
     "platformUrl": "https://greyjay-stremio.netlify.app",
     "repositoryUrl": "https://github.com/mteij/Grayjay-stremio-pluggin",
     "sourceUrl": "https://greyjay-stremio.netlify.app/plugin/Config.json",
-    "scriptUrl": "https://greyjay-stremio.netlify.app/plugin/Script.js?v=1780828526",
-    "version": 1780828526,
+    "scriptUrl": "https://greyjay-stremio.netlify.app/plugin/Script.js?v=1780828796",
+    "version": 1780828796,
     "iconUrl": "https://greyjay-stremio.netlify.app/plugin/icon.png",
     "id": "e8e19e00-22c6-43b9-a411-cf0660601f01",
-    "scriptSignature": "GszaZLumTsCBLcgOz3IpQ1bar5gcx3FFbOgAQcgl5tNaElCY0PPDv19x+c7ndNdHjd5r0ipSOVrHn2CUIRZYjcRx+VCIglcwxozwOgofnuxyzDOMeRif98YWPbY8GRPJB9GVXqne/ydjUpXj1Q1492QUxhlu5mfgaNK0MZxwnH9R6Y14uX14aKqS0nYm/Nt0NZ2K4owz76qJ9o3vnN6WK7m7J/sGAFgN1xz7Gl6d8XmY2mMfMjSgqSN3+TOpRLm2lvVPtXdhG6CQKlJ3ZrF5zfNKWrp1qLCnnuC/DRR152i7ZspBq1aNxtzuJ2ukjRb6BGG/SWbDEdJmVnOPg++2uw==",
+    "scriptSignature": "Dae2tI5bFegA2i/pIfVj9grwPZhGehlLh+rEcekG7om5f1i14BgdF1+RToaICV14hVrzTUB9oJZC6sDTkUOhrglXKpyollC4l+ZfAmx31hi9T3Whj+wRCRYecjqg8+lLfcOl+/DHmACbdYJgHIZVo9b4jszjm+fwqs8lBnkaF55i4lhzKxX98cvO98++bp+KchP39vtcgnOR3Rp/USPjUPn8iaMVGxketagRiwAFkXkUU1HoH25kzXRo6BHrlPi/wXloIX8JNZopPySKbXhuoUXzpkyVIHvOr7/Ltru1JO4NUr53osjskqyMdV3r6EeOPSvDMsoVBTUL+vOgRgaRiw==",
     "scriptPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs+UccK9soemMFApJPGXYwtQozig3T5tuAhqrCjQEi5e6x0LffkLbYqY6+XbmLQIju3jzl2D+x1IDIqfr0FCW6fyPoLqK5sRrdP2AZhUI8HxKdjE1B+VwWnSzpa/bdr298mpNC1pbVQckyDd8A2licwCuA587Mbmx5ILmU2oKn/+lKjjlx5PfbteJVa6ztwNaxpYJelU3d6Y0YDagCMFyHnjDSJlonaJfgFAzh1RYXXPB5wImNlyW+NKtAR09iCD2eG/s1spXi2fdic4mzR3AeXnDSBlDmNQOjQ4j0KYZqTEtmcLbpQr7p9hd7M604IjtmXLo9qenXYKkSP1ZL4d6BwIDAQAB",
     "packages": [
         "Http",
@@ -25,27 +25,27 @@
         {
             "variable": "homeFeedCategory",
             "name": "Home Screen Category",
-            "description": "Select the category to display on the Home screen.",
+            "description": "Select category (1=Trending, 2=Popular, 3=Top Rated, 4=Now Playing)",
             "type": "options",
             "options": [
-                "Trending",
-                "Popular",
-                "Top Rated",
-                "Now Playing"
+                "1",
+                "2",
+                "3",
+                "4"
             ],
-            "default": "Trending"
+            "default": "1"
         },
         {
             "variable": "homeFeedType",
             "name": "Home Screen Media Type",
-            "description": "Select whether to show Movies, Series, or Both.",
+            "description": "Select media type (1=Both, 2=Movies, 3=Series)",
             "type": "options",
             "options": [
-                "Both",
-                "Movies",
-                "Series"
+                "1",
+                "2",
+                "3"
             ],
-            "default": "Both"
+            "default": "1"
         }
     ],
     "authentication": {

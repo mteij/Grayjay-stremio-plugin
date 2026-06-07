@@ -58,7 +58,7 @@ source.getHome = function() {
     const url = `https://api.themoviedb.org/3/movie/popular?api_key=${_tmdbKey}&language=en-US&page=1`;
     const response = http.GET(url, {});
     if (response.code !== 200) {
-        throw new ScriptException("TMDB API Error: " + response.code);
+        throw new ScriptException("TMDB API Error " + response.code + ": " + response.body);
     }
     const movies = JSON.parse(response.body).results || [];
 
@@ -70,7 +70,7 @@ source.search = function(query) {
     const url = `https://api.themoviedb.org/3/search/movie?api_key=${_tmdbKey}&query=${encodeURIComponent(query)}&page=1`;
     const response = http.GET(url, {});
     if (response.code !== 200) {
-        throw new ScriptException("TMDB API Error: " + response.code);
+        throw new ScriptException("TMDB API Error " + response.code + ": " + response.body);
     }
     const movies = JSON.parse(response.body).results || [];
     
@@ -97,7 +97,7 @@ source.getContentDetails = function(url) {
     const tmdbUrl = `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${_tmdbKey}&append_to_response=external_ids`;
     const tmdbResponse = http.GET(tmdbUrl, {});
     if (tmdbResponse.code !== 200) {
-        throw new ScriptException("TMDB API Error: " + tmdbResponse.code);
+        throw new ScriptException("TMDB API Error " + tmdbResponse.code + ": " + tmdbResponse.body);
     }
     const movieData = JSON.parse(tmdbResponse.body);
     

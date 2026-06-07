@@ -63,7 +63,8 @@ function mapMovieToVideo(movie) {
         thumbnails: new Thumbnails([new Thumbnail(getPosterUrl(movie.id, movie.poster_path, movie.backdrop_path), 0)]),
         author: new PlatformAuthorLink(new PlatformID("TMDB", "TMDB", plugin.config.id), "TMDB", "https://themoviedb.org", "https://themoviedb.org/favicon.ico"),
         datetime: Math.floor(new Date(movie.release_date).getTime() / 1000),
-        url: "https://www.themoviedb.org/movie/" + movie.id
+        url: "https://www.themoviedb.org/movie/" + movie.id,
+        duration: 0 // Prevents UI glitches on Desktop
     });
 }
 
@@ -75,18 +76,42 @@ source.enable = function(config) {
     }
 };
 
-source.getHome = function() {
+function getHomeMovies(page) {
     fetchUserSettings();
-    const movies = tmdbGet("https://api.themoviedb.org/3/movie/popular?language=en-US&page=1").results || [];
+    const response = tmdbGet(`https://api.themoviedb.org/3/movie/popular?language=en-US&page=${page}`);
+    const movies = response.results || [];
+    const hasMore = response.page < response.total_pages;
 
-    return new VideoPager(movies.map(mapMovieToVideo), false);
+    const pager = new VideoPager(movies.map(mapMovieToVideo), hasMore);
+    pager.nextPage = function() {
+        return getHomeMovies(page + 1);
+    };
+    return pager;
+}
+
+source.getHome = function() {
+    return getHomeMovies(1);
 };
 
-source.search = function(query) {
+function getSearchMovies(query, page) {
     fetchUserSettings();
-    const movies = tmdbGet(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&page=1`).results || [];
+    const response = tmdbGet(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&page=${page}`);
+    const movies = response.results || [];
+    const hasMore = response.page < response.total_pages;
     
-    return new VideoPager(movies.map(mapMovieToVideo), false);
+    const pager = new VideoPager(movies.map(mapMovieToVideo), hasMore);
+    pager.nextPage = function() {
+        return getSearchMovies(query, page + 1);
+    };
+    return pager;
+}
+
+source.search = function(query) {
+    return getSearchMovies(query, 1);
+};
+
+source.isContentDetailsUrl = function(url) {
+    return url.includes("themoviedb.org/movie/");
 };
 
 source.getSearchCapabilities = () => {

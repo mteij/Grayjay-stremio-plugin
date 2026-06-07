@@ -117,30 +117,78 @@ class TmdbHomePager extends VideoPager {
         super(data.items, data.hasMore, { page: page });
     }
     static fetch(page) {
-        const feedType = _pluginSettings?.homeFeed || "Trending (Default)";
-        let endpoint = "trending/all/day";
-        if (feedType === "Popular Movies") endpoint = "movie/popular";
-        else if (feedType === "Popular TV Shows") endpoint = "tv/popular";
-        else if (feedType === "Top Rated Movies") endpoint = "movie/top_rated";
-        else if (feedType === "Top Rated TV Shows") endpoint = "tv/top_rated";
-        else if (feedType === "Now Playing Movies") endpoint = "movie/now_playing";
-
-        const url = `https://api.themoviedb.org/3/${endpoint}?api_key=${_tmdbKey}&language=en-US&page=${page}`;
-        const response = http.GET(url, {});
-        const body = JSON.parse(response.body);
+        const category = _pluginSettings?.homeFeedCategory || "Trending";
+        const mediaType = _pluginSettings?.homeFeedType || "Mix";
         
-        const items = (body.results || []).map(i => {
-            let mediaType = i.media_type;
-            if (!mediaType) {
-                if (endpoint.startsWith("movie")) mediaType = "movie";
-                else if (endpoint.startsWith("tv")) mediaType = "tv";
+        let movieEndpoint = "";
+        let tvEndpoint = "";
+        
+        if (category === "Trending") {
+            movieEndpoint = "trending/movie/day";
+            tvEndpoint = "trending/tv/day";
+            if (mediaType === "Mix") {
+                movieEndpoint = "trending/all/day";
+                tvEndpoint = "";
             }
-            if (mediaType === "tv") return mapTvToPlaylist(i);
-            if (mediaType === "movie") return mapMovieToVideo(i);
-            return null;
-        }).filter(Boolean);
+        } else if (category === "Popular") {
+            movieEndpoint = "movie/popular";
+            tvEndpoint = "tv/popular";
+        } else if (category === "Top Rated") {
+            movieEndpoint = "movie/top_rated";
+            tvEndpoint = "tv/top_rated";
+        } else if (category === "Now Playing") {
+            movieEndpoint = "movie/now_playing";
+            tvEndpoint = "tv/on_the_air";
+        }
+
+        const fetchEndpoint = (endpoint, defaultType) => {
+            if (!endpoint) return { results: [], hasMore: false };
+            try {
+                const url = `https://api.themoviedb.org/3/${endpoint}?api_key=${_tmdbKey}&language=en-US&page=${page}`;
+                const response = http.GET(url, {});
+                const body = JSON.parse(response.body);
+                const results = (body.results || []).map(i => {
+                    let type = i.media_type || defaultType;
+                    if (type === "tv") return mapTvToPlaylist(i);
+                    if (type === "movie") return mapMovieToVideo(i);
+                    return null;
+                }).filter(Boolean);
+                return { results, hasMore: page < (body.total_pages || 1) };
+            } catch (e) {
+                return { results: [], hasMore: false };
+            }
+        };
+
+        let items = [];
+        let hasMore = false;
+
+        if (mediaType === "Movies" && movieEndpoint) {
+            const res = fetchEndpoint(movieEndpoint, "movie");
+            items = res.results;
+            hasMore = res.hasMore;
+        } else if (mediaType === "Series" && tvEndpoint) {
+            const res = fetchEndpoint(tvEndpoint, "tv");
+            items = res.results;
+            hasMore = res.hasMore;
+        } else {
+            // Mix
+            if (category === "Trending") {
+                const res = fetchEndpoint(movieEndpoint, null);
+                items = res.results;
+                hasMore = res.hasMore;
+            } else {
+                const resMovie = fetchEndpoint(movieEndpoint, "movie");
+                const resTv = fetchEndpoint(tvEndpoint, "tv");
+                const maxLen = Math.max(resMovie.results.length, resTv.results.length);
+                for (let i = 0; i < maxLen; i++) {
+                    if (resMovie.results[i]) items.push(resMovie.results[i]);
+                    if (resTv.results[i]) items.push(resTv.results[i]);
+                }
+                hasMore = resMovie.hasMore || resTv.hasMore;
+            }
+        }
         
-        return { items, hasMore: page < (body.total_pages || 1) };
+        return { items, hasMore };
     }
     nextPage() {
         const next = this.context.page + 1;

@@ -14,6 +14,7 @@ export async function saveSettings(formData: FormData) {
 
   const tmdbApiKey = formData.get('tmdb_api_key') as string
   const stremioAddonsRaw = formData.get('stremio_addons') as string
+  const streamPreferencesRaw = formData.get('stream_preferences') as string
   
   let stremioAddons = []
   try {
@@ -27,13 +28,23 @@ export async function saveSettings(formData: FormData) {
     stremioAddons = []
   }
 
+  let streamPreferences = {}
+  try {
+    if (streamPreferencesRaw) {
+      streamPreferences = JSON.parse(streamPreferencesRaw)
+    }
+  } catch (e) {
+    console.error('Failed to parse stream preferences', e)
+  }
+
   // Upsert settings
   const { error } = await supabase
     .from('user_settings')
     .upsert({
       id: user.id,
       tmdb_api_key: tmdbApiKey,
-      stremio_addons: stremioAddons
+      stremio_addons: stremioAddons,
+      stream_preferences: streamPreferences
     })
 
   if (error) {

@@ -19,7 +19,7 @@ export async function GET() {
 
   const { data: settings, error: settingsError } = await supabase
     .from('user_settings')
-    .select('tmdb_api_key, stremio_addons')
+    .select('tmdb_api_key, stremio_addons, stream_preferences')
     .eq('id', user.id)
     .single()
 

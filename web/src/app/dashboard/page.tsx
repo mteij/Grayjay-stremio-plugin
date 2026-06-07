@@ -5,6 +5,7 @@ import AddonList, { Addon } from '@/components/AddonList'
 import { SubmitButton } from '@/components/SubmitButton'
 import QRCode from 'react-qr-code'
 import { Smartphone } from 'lucide-react'
+import StreamPreferencesConfig from '@/components/StreamPreferences'
 
 export default async function DashboardPage(props: { searchParams: Promise<{ message?: string }> }) {
   const searchParams = await props.searchParams
@@ -104,7 +105,9 @@ export default async function DashboardPage(props: { searchParams: Promise<{ mes
               <AddonList initialAddons={hydratedAddons} />
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-dark-3">
+            <StreamPreferencesConfig initialPrefs={settings?.stream_preferences || {}} />
+
+            <div className="flex justify-end pt-4 border-t border-dark-3 mt-8">
               <SubmitButton
                 formAction={saveSettings}
                 className="w-full sm:w-auto cursor-pointer rounded-md border border-primary bg-primary px-8 py-3 text-base font-medium text-white transition hover:bg-opacity-90"

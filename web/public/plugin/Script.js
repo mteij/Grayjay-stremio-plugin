@@ -1,6 +1,7 @@
 let _settings = null;
 let _stremioAddons = [];
 let _tmdbKey = "";
+let _streamPrefs = null;
 
 function fetchUserSettings() {
     if (_settings) return _settings;
@@ -18,6 +19,15 @@ function fetchUserSettings() {
     _settings = JSON.parse(response.body);
     _tmdbKey = _settings.tmdb_api_key;
     _stremioAddons = _settings.stremio_addons || [];
+    _streamPrefs = _settings.stream_preferences || {
+        resolutionOrder: ['4K', '1080P', '720P', '480P', '360P', '?'],
+        codecOrder: ['HEVC', 'AV1', 'AVC'],
+        qualityOrder: ['Bluray REMUX', 'Bluray', 'WEB-DL', 'WEBRip', 'HDRip', 'HC HD-Rip', 'DVDRip', 'HDTV', 'CAM', 'TS', 'TC', 'SCR'],
+        hdrPreference: 'any',
+        typeOrder: ['debrid', 'p2p', 'http'],
+        maxSizeGB: null,
+        minSeeders: null
+    };
 
     if (!_tmdbKey) {
         throw new ScriptException("TMDB API Key is missing. Please configure it in the Web App.");
@@ -293,6 +303,81 @@ source.getContentDetails = function(url) {
         return `${addonName} · ${resolution}`;
     }
 
+    // Helper to extract metadata from text
+    function parseStreamMetadata(stream) {
+        const text = ((stream.name || "") + " " + (stream.title || "")).toUpperCase();
+        
+        let resolution = "?";
+        const resMatch = text.match(/(8K|4K|4320P|2160P|1440P|1080P|720P|480P|360P)/);
+        if (resMatch) {
+            resolution = resMatch[1].replace("4320P", "8K").replace("2160P", "4K");
+        }
+
+        let codec = "Unknown";
+        if (text.includes("HEVC") || text.includes("H.265") || text.includes("X265")) codec = "HEVC";
+        else if (text.includes("AV1")) codec = "AV1";
+        else if (text.includes("AVC") || text.includes("H.264") || text.includes("X264")) codec = "AVC";
+
+        let quality = "Unknown";
+        if (text.includes("REMUX")) quality = "Bluray REMUX";
+        else if (text.includes("WEB-DL")) quality = "WEB-DL";
+        else if (text.includes("BLURAY")) quality = "Bluray";
+        else if (text.includes("WEBRIP")) quality = "WEBRip";
+        else if (text.includes("HDRIP")) quality = "HDRip";
+        else if (text.includes("HC HD-RIP") || text.includes("HC HDRIP")) quality = "HC HD-Rip";
+        else if (text.includes("DVDRIP")) quality = "DVDRip";
+        else if (text.includes("HDTV")) quality = "HDTV";
+        else if (text.includes("CAM")) quality = "CAM";
+        else if (text.includes("TS")) quality = "TS";
+        else if (text.includes("TC")) quality = "TC";
+        else if (text.includes("SCR")) quality = "SCR";
+
+        const isHDR = text.includes("HDR") || text.includes("DV") || text.includes("DOLBY VISION") || text.includes("10BIT");
+
+        let type = "p2p";
+        if (text.includes("DEBRID") || text.includes("RD") || text.includes("AD") || text.includes("PM") || text.includes("TB") || text.includes("TORBOX")) type = "debrid";
+        else if (stream.url && stream.url.startsWith("http")) type = "http";
+
+        let sizeGB = 0;
+        if (stream.behaviorHints && stream.behaviorHints.videoSize) {
+            sizeGB = stream.behaviorHints.videoSize / (1024 * 1024 * 1024);
+        } else {
+            const sizeMatch = text.match(/([0-9.]+)\s*(GB|MB)/i);
+            if (sizeMatch) {
+                sizeGB = parseFloat(sizeMatch[1]);
+                if (sizeMatch[2].toUpperCase() === "MB") sizeGB /= 1024;
+            }
+        }
+
+        let seeders = 0;
+        const seedMatch = text.match(/👤\s*(\d+)/) || text.match(/S:\s*(\d+)/);
+        if (seedMatch) seeders = parseInt(seedMatch[1]);
+
+        return { resolution, codec, quality, isHDR, type, sizeGB, seeders };
+    }
+
+    function scoreStream(meta, prefs) {
+        let score = 0;
+        
+        const resIdx = prefs.resolutionOrder.indexOf(meta.resolution);
+        if (resIdx !== -1) score += (prefs.resolutionOrder.length - resIdx) * 100;
+
+        const qualIdx = prefs.qualityOrder.indexOf(meta.quality);
+        if (qualIdx !== -1) score += (prefs.qualityOrder.length - qualIdx) * 50;
+
+        const codecIdx = prefs.codecOrder.indexOf(meta.codec);
+        if (codecIdx !== -1) score += (prefs.codecOrder.length - codecIdx) * 25;
+
+        if (prefs.hdrPreference === "prefer" && meta.isHDR) score += 30;
+
+        const typeIdx = prefs.typeOrder.indexOf(meta.type);
+        if (typeIdx !== -1) score += (prefs.typeOrder.length - typeIdx) * 40;
+
+        return score;
+    }
+
+    const collectedStreams = [];
+
     for (const addon of _stremioAddons) {
         try {
             const streamUrl = addon.replace("manifest.json", streamEndpoint);
@@ -302,14 +387,26 @@ source.getContentDetails = function(url) {
                 if (streamData && streamData.streams) {
                     for (const stream of streamData.streams) {
                         if (stream.url && isStreamValid(stream)) {
-                            sources.push(new VideoUrlSource({
-                                width: 1920,
-                                height: 1080,
-                                container: stream.url.includes(".m3u8") ? "application/x-mpegURL" : "video/mp4",
-                                url: stream.url,
-                                name: parseStreamName(stream),
-                                bitrate: 0
-                            }));
+                            const meta = parseStreamMetadata(stream);
+                            
+                            // Hard filters
+                            if (_streamPrefs.hdrPreference === "exclude" && meta.isHDR) continue;
+                            if (_streamPrefs.maxSizeGB && meta.sizeGB > _streamPrefs.maxSizeGB) continue;
+                            if (_streamPrefs.minSeeders && meta.type === "p2p" && meta.seeders < _streamPrefs.minSeeders) continue;
+
+                            const score = scoreStream(meta, _streamPrefs);
+
+                            collectedStreams.push({
+                                streamObj: new VideoUrlSource({
+                                    width: 1920,
+                                    height: 1080,
+                                    container: stream.url.includes(".m3u8") ? "application/x-mpegURL" : "video/mp4",
+                                    url: stream.url,
+                                    name: parseStreamName(stream),
+                                    bitrate: 0
+                                }),
+                                score: score
+                            });
                         }
                     }
                 }
@@ -339,6 +436,12 @@ source.getContentDetails = function(url) {
         } catch(e) {
             // Ignore addon subtitle errors
         }
+    }
+
+    // Sort streams by score descending and add to sources
+    collectedStreams.sort((a, b) => b.score - a.score);
+    for (const item of collectedStreams) {
+        sources.push(item.streamObj);
     }
 
     return new PlatformVideoDetails({

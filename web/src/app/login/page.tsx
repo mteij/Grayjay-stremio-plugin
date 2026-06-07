@@ -14,7 +14,7 @@ export default async function LoginPage(props: { searchParams: Promise<{ error?:
   const { data: { user } } = await supabase.auth.getUser()
 
   if (user) {
-    redirect('/dashboard')
+    redirect('/api/auth/redirect')
   }
 
   const searchParams = await props.searchParams

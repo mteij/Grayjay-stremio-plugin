@@ -28,7 +28,7 @@ function fetchUserSettings() {
         cookieString = authObj;
     }
 
-    const response = http.GET("https://greyjay-stremio.netlify.app/api/settings", {
+    const response = http.GET("https://grayjay-stremio.netlify.app/api/settings", {
         "Cookie": cookieString
     });
 

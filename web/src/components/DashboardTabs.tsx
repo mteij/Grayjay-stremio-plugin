@@ -14,11 +14,13 @@ export default function DashboardTabs({ generalContent, preferencesContent, inte
   return (
     <div className="w-full">
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-12">
-          <TabsTrigger value="general" className="text-base">General Settings</TabsTrigger>
-          <TabsTrigger value="preferences" className="text-base">Stream Preferences</TabsTrigger>
-          <TabsTrigger value="integrations" className="text-base">Integrations</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+          <TabsList className="inline-flex min-w-max sm:grid w-full sm:grid-cols-3 h-12 bg-muted p-1 rounded-lg">
+            <TabsTrigger value="general" className="text-sm sm:text-base px-6 sm:px-0">General Settings</TabsTrigger>
+            <TabsTrigger value="preferences" className="text-sm sm:text-base px-6 sm:px-0">Stream Preferences</TabsTrigger>
+            <TabsTrigger value="integrations" className="text-sm sm:text-base px-6 sm:px-0">Integrations</TabsTrigger>
+          </TabsList>
+        </div>
         
         <TabsContent key="general" value="general" className="space-y-6 animate-fade-up outline-none mt-6">
           {generalContent}

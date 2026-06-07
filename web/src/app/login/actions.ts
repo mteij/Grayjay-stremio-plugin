@@ -22,7 +22,6 @@ export async function login(formData: FormData) {
   if (authData.session) {
     const cookieStore = await cookies()
     cookieStore.set('grayjay-api-token', authData.session.access_token, {
-      httpOnly: true,
       secure: true,
       sameSite: 'lax',
       path: '/',
@@ -62,7 +61,6 @@ export async function signup(formData: FormData) {
   if (authData.session) {
     const cookieStore = await cookies()
     cookieStore.set('grayjay-api-token', authData.session.access_token, {
-      httpOnly: true,
       secure: true,
       sameSite: 'lax',
       path: '/',
@@ -135,8 +133,6 @@ export async function continueToDashboard() {
 
   if (session) {
     const cookieStore = await cookies()
-    cookieStore.set('grayjay-api-token', session.access_token, {
-      httpOnly: true,
       secure: true,
       sameSite: 'lax',
       path: '/',

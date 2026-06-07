@@ -34,11 +34,11 @@ export default async function LoginPage(props: { searchParams: Promise<{ error?:
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form action={continueToDashboard} className="flex flex-col space-y-4">
-                <SubmitButton className="w-full h-12 text-base font-medium">
+              <div className="flex flex-col space-y-4">
+                <a href="/dashboard" className="flex items-center justify-center w-full h-12 text-base font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors">
                   Continue to Dashboard
-                </SubmitButton>
-              </form>
+                </a>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -71,7 +71,7 @@ export default async function LoginPage(props: { searchParams: Promise<{ error?:
         </CardHeader>
 
         <CardContent>
-          <form className="flex flex-col space-y-6">
+          <form action="/api/auth/login" method="POST" className="flex flex-col space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-base font-medium">Email</Label>
               <Input
@@ -101,12 +101,12 @@ export default async function LoginPage(props: { searchParams: Promise<{ error?:
             </div>
 
             <div className="flex flex-col gap-3 pt-4">
-              <SubmitButton
-                formAction={login}
-                className="w-full h-12 text-base font-medium"
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-md text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 w-full h-12"
               >
                 Log in
-              </SubmitButton>
+              </button>
               <SubmitButton
                 formAction={signup}
                 variant="outline"

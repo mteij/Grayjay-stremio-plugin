@@ -9,7 +9,8 @@ function fetchUserSettings() {
         throw new ScriptException("No authentication found. Please log in.");
     }
 
-    const response = http.GET("https://grayjay-stremio.netlify.app/api/settings", {}, true);
+    // We append a timestamp to the URL to aggressively bust the Android HttpURLConnection cache
+    const response = http.GET("https://grayjay-stremio.netlify.app/api/settings?t=" + Date.now(), {}, true);
 
     if (response.code !== 200) {
         throw new ScriptException("Failed to load settings. HTTP " + response.code);

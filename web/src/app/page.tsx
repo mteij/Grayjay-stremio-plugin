@@ -5,7 +5,7 @@ import QRCode from 'react-qr-code'
 import { Smartphone, Settings, Code } from 'lucide-react'
 
 export default function Home() {
-  const pluginUrl = 'https://greyjay-stremio.netlify.app/plugin/Config.json'
+  const pluginUrl = 'https://grayjay-stremio.netlify.app/plugin/Config.json'
   const grayjayDeepLink = `grayjay://plugin/${pluginUrl}`
 
   return (

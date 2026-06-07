@@ -3,14 +3,14 @@
     "description": "Your Stremio addons, unified into a single TMDB-powered library.",
     "author": "MTEIJ",
     "authorUrl": "https://github.com/mteij",
-    "platformUrl": "https://greyjay-stremio.netlify.app",
+    "platformUrl": "https://grayjay-stremio.netlify.app",
     "repositoryUrl": "https://github.com/mteij/Grayjay-stremio-pluggin",
-    "sourceUrl": "https://greyjay-stremio.netlify.app/plugin/Config.json",
-    "scriptUrl": "https://greyjay-stremio.netlify.app/plugin/Script.js?v=1780829382",
-    "version": 1780829382,
-    "iconUrl": "https://greyjay-stremio.netlify.app/plugin/icon.png",
+    "sourceUrl": "https://grayjay-stremio.netlify.app/plugin/Config.json",
+    "scriptUrl": "https://greyjay-stremio.netlify.app/plugin/Script.js?v=1780829677",
+    "version": 1780829677,
+    "iconUrl": "https://grayjay-stremio.netlify.app/plugin/icon.png",
     "id": "e8e19e00-22c6-43b9-a411-cf0660601f01",
-    "scriptSignature": "i1pn8NGmZrIlmVOtUpUAT52brAR4USAI8QDYqvJBM1S98jmvh2lI4ag1zDiEoElWotZOfe10i3luIMyQLcH6lSOF0y8Cgrq2QazpSe+8vItVx5+PTNueX6BBQ8yOjnqmrc20G8WbJQ3lOr8A/s2COvjM0e5sj6R1wfLo2SU844nw5ACXii5k/S0o5MKqw1urREbvQAKgUaG2kC7bqNSE+YfHdpJEHDGKNktsiSd52PfxsHOq7wVGESPY9v4LQUuvVfr3fK7XNlGRlKFnvcJ2omdNHA8RNZRd0FDU/rIgLeXLS2tzc0ujD8cPP/XELjeCcTAT1k5lX7ik4phpX3KaYA==",
+    "scriptSignature": "SyumpmkR/j5h/244uSnfz6bIO+q+WdV1yBwJX1+JBcJ8kHHrnjKYu3BpCUZb8OsRUYERRICmT7R7qQi3y7hYZ1iNfNcxlZv3KE5kNxHlAj9Y7IAdVGCnZb7w5t5bHwtS2eZurpEg0NB82qA3Uh6H+WjfkiX2KZjSSjYT0Wc9h2SO369KY36EscrBif1cm388sef08oWKKTzvH/cGfCeed0wrqSVAtEG7UvlEv9WDAg249FPf+UG7YChaEeALFlSeFxpNxVDylmTfP9YZA2M6WJL62Rgp0nhMxN0D/TaP7MJJOe5QMG+b9/Z1Tnevan3jQJa0986/ERKiiwbCStTJOA==",
     "scriptPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs+UccK9soemMFApJPGXYwtQozig3T5tuAhqrCjQEi5e6x0LffkLbYqY6+XbmLQIju3jzl2D+x1IDIqfr0FCW6fyPoLqK5sRrdP2AZhUI8HxKdjE1B+VwWnSzpa/bdr298mpNC1pbVQckyDd8A2licwCuA587Mbmx5ILmU2oKn/+lKjjlx5PfbteJVa6ztwNaxpYJelU3d6Y0YDagCMFyHnjDSJlonaJfgFAzh1RYXXPB5wImNlyW+NKtAR09iCD2eG/s1spXi2fdic4mzR3AeXnDSBlDmNQOjQ4j0KYZqTEtmcLbpQr7p9hd7M604IjtmXLo9qenXYKkSP1ZL4d6BwIDAQAB",
     "packages": [
         "Http",
@@ -50,8 +50,8 @@
     ],
     "authentication": {
         "userAgent": "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.230 Mobile Safari/537.36",
-        "completionUrl": "https://greyjay-stremio.netlify.app/dashboard",
-        "loginUrl": "https://greyjay-stremio.netlify.app/login",
+        "completionUrl": "https://grayjay-stremio.netlify.app/dashboard",
+        "loginUrl": "https://grayjay-stremio.netlify.app/login",
         "cookiesToFind": [
             "grayjay-api-token"
         ]

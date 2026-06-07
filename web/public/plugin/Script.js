@@ -10,7 +10,7 @@ function fetchUserSettings() {
         throw new ScriptException("No authentication found. Please log in.");
     }
 
-    const response = http.GET("https://greyjay-stremio.netlify.app/api/settings", {}, true);
+    const response = http.GET("https://grayjay-stremio.netlify.app/api/settings", {}, true);
 
     if (response.code !== 200) {
         throw new ScriptException("Failed to load settings. HTTP " + response.code);

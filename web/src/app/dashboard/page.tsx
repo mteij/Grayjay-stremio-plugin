@@ -56,7 +56,7 @@ export default async function DashboardPage(props: { searchParams: Promise<{ mes
     })
   )
 
-  const pluginUrl = 'https://greyjay-stremio.netlify.app/plugin/Config.json'
+  const pluginUrl = 'https://grayjay-stremio.netlify.app/plugin/Config.json'
   const grayjayDeepLink = `grayjay://plugin/${pluginUrl}`
 
   return (

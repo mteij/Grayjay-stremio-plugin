@@ -6,8 +6,8 @@
     "platformUrl": "https://grayjay-stremio.netlify.app",
     "repositoryUrl": "https://github.com/mteij/Grayjay-stremio-pluggin",
     "sourceUrl": "https://grayjay-stremio.netlify.app/plugin/Config.json",
-    "scriptUrl": "https://grayjay-stremio.netlify.app/plugin/Script.js?v=1780846743",
-    "version": 1780846743,
+    "scriptUrl": "https://grayjay-stremio.netlify.app/plugin/Script.js?v=1780846832",
+    "version": 1780846832,
     "iconUrl": "https://grayjay-stremio.netlify.app/plugin/icon.png",
     "id": "e8e19e00-22c6-43b9-a411-cf0660601f01",
     "scriptSignature": "Dp1+HFGbPj7D2bkJGyEeQgT6qXNLmUZA578XpKBJvg47mNtOnuybdlSbbrMAwbuHmhV1jUxTd6YQDgWFF7QVwLKJ02IJTz6R/lKULnD1WVPoxhIGvohSySljwkAkSVkJU1UZ7dCtmA25adHEhYdaNH/bRJ1LWl0gvCZiqUHX4GBnFWc3XPAjTa+xsyQMXtvwGxKN6sXxW+OkHY6XDiA6VnTmcw1Iz8M81kPuqA7Ynvmy1KdE0VF49bubcUunOqoJgz5QcrUEvTieDsl0DU0IghF5u9yKBcZMQZQCCSa5V7y7lbbHVwM3N1w2FFNYFfD1yRXMbBVt9S6aT6HwR46P4g==",
@@ -53,6 +53,9 @@
         "completionUrl": "https://grayjay-stremio.netlify.app/dashboard",
         "loginUrl": "https://grayjay-stremio.netlify.app/login",
         "cookiesToFind": [
+            "grayjay-api-token"
+        ],
+        "headersToFind": [
             "grayjay-api-token"
         ]
     }

@@ -16,7 +16,7 @@ function fetchUserSettings() {
     }
 
     _settings = JSON.parse(response.body);
-    _tmdbKey = _settings.tmdb_api_key;
+    _tmdbKey = (_settings.tmdb_api_key || "").trim();
     _stremioAddons = _settings.stremio_addons || [];
 
     if (!_tmdbKey) {
@@ -24,6 +24,24 @@ function fetchUserSettings() {
     }
 
     return _settings;
+}
+function tmdbGet(endpoint) {
+    let url = endpoint.includes("?") ? endpoint + "&" : endpoint + "?";
+    let headers = {};
+    
+    // TMDB v4 Read Access Tokens are long JWTs (> 40 chars)
+    // TMDB v3 API Keys are 32-char hex strings
+    if (_tmdbKey.length > 40) {
+        headers["Authorization"] = "Bearer " + _tmdbKey;
+    } else {
+        url += "api_key=" + _tmdbKey + "&";
+    }
+    
+    const response = http.GET(url, headers);
+    if (response.code !== 200) {
+        throw new ScriptException("TMDB API Error " + response.code + ": " + response.body);
+    }
+    return JSON.parse(response.body);
 }
 
 function getPosterUrl(tmdbId, tmdbPosterPath, tmdbBackdropPath) {
@@ -55,24 +73,14 @@ source.enable = function(config) {
 
 source.getHome = function() {
     fetchUserSettings();
-    const url = `https://api.themoviedb.org/3/movie/popular?api_key=${_tmdbKey}&language=en-US&page=1`;
-    const response = http.GET(url, {});
-    if (response.code !== 200) {
-        throw new ScriptException("TMDB API Error " + response.code + ": " + response.body);
-    }
-    const movies = JSON.parse(response.body).results || [];
+    const movies = tmdbGet("https://api.themoviedb.org/3/movie/popular?language=en-US&page=1").results || [];
 
     return new VideoPager(movies.map(mapMovieToVideo), false);
 };
 
 source.search = function(query) {
     fetchUserSettings();
-    const url = `https://api.themoviedb.org/3/search/movie?api_key=${_tmdbKey}&query=${encodeURIComponent(query)}&page=1`;
-    const response = http.GET(url, {});
-    if (response.code !== 200) {
-        throw new ScriptException("TMDB API Error " + response.code + ": " + response.body);
-    }
-    const movies = JSON.parse(response.body).results || [];
+    const movies = tmdbGet(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&page=1`).results || [];
     
     return new VideoPager(movies.map(mapMovieToVideo), false);
 };
@@ -94,12 +102,7 @@ source.getContentDetails = function(url) {
     const tmdbId = tmdbMatch[1];
 
     // Get Movie Details + External IDs (IMDB ID)
-    const tmdbUrl = `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${_tmdbKey}&append_to_response=external_ids`;
-    const tmdbResponse = http.GET(tmdbUrl, {});
-    if (tmdbResponse.code !== 200) {
-        throw new ScriptException("TMDB API Error " + tmdbResponse.code + ": " + tmdbResponse.body);
-    }
-    const movieData = JSON.parse(tmdbResponse.body);
+    const movieData = tmdbGet(`https://api.themoviedb.org/3/movie/${tmdbId}?append_to_response=external_ids`);
     
     const imdbId = movieData.external_ids?.imdb_id;
     if (!imdbId) throw new ScriptException("No IMDB ID found for this movie");

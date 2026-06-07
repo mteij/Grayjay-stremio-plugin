@@ -28,10 +28,18 @@ export async function GET(request: Request) {
     .from('user_settings')
     .select('tmdb_api_key, stremio_addons, stream_preferences')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   if (settingsError) {
-    return NextResponse.json({ error: 'Settings not found' }, { status: 404 })
+    return NextResponse.json({ error: 'Database error' }, { status: 500 })
+  }
+
+  if (!settings) {
+    return NextResponse.json({
+      tmdb_api_key: "",
+      stremio_addons: [],
+      stream_preferences: null
+    })
   }
 
   return NextResponse.json(settings)

@@ -25,7 +25,8 @@ export async function login(formData: FormData) {
       httpOnly: true,
       secure: true,
       sameSite: 'lax',
-      path: '/'
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365
     })
   }
 
@@ -64,7 +65,8 @@ export async function signup(formData: FormData) {
       httpOnly: true,
       secure: true,
       sameSite: 'lax',
-      path: '/'
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365
     })
   }
 
@@ -137,7 +139,8 @@ export async function continueToDashboard() {
       httpOnly: true,
       secure: true,
       sameSite: 'lax',
-      path: '/'
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365
     })
   }
 
